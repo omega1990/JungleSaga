@@ -13,6 +13,7 @@ public:
 	void InitializeGrid();
 	void PrintGrid();
 
+
 	int** getGemGrid();
 
 
