@@ -14,12 +14,7 @@ public:
 	
 	bool IsGemClicked();
 
-	enum direction
-	{
-		HORIZONTAL,
-		VERTICAL, 
-		STATIONARY
-	};
+
 
 private:
 	King::Engine mEngine;
@@ -37,5 +32,8 @@ private:
 	float moseMoveStartY = 0.0f;
 	float angle;
 
-	direction gemDirection;
+	int switchGemX = 0;
+	int switchGemY = 0;
+
+	Renderer::direction gemDirection;
 };

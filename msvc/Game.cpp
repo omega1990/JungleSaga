@@ -8,7 +8,7 @@ Game::Game(GemGrid& passedGrid)
 	, mYellowDiamondY(100.0f)
 	, grid(&passedGrid)
 	, gridArray(grid->getGemGrid())
-	, renderer(new Renderer(mEngine,*grid))
+	, renderer(new Renderer(mEngine, *grid))
 {};
 
 Game::~Game()
@@ -26,26 +26,116 @@ void Game::Update()
 	renderer->RenderBackground();
 
 	mRotation += mEngine.GetLastFrameSeconds();
-	
+
+	int x = 0;
+	int y = 0;
+
 	if (IsGemClicked())
 	{
 		switch (gemDirection)
 		{
-		case HORIZONTAL:
-			renderer->RenderGemGrid(selectedGemX, selectedGemY, mEngine.GetMouseX() - moseMoveStartX, 0);
+		case Renderer::HORIZONTAL_RIGHT:
+			
+			if (selectedGemX < 7)
+			{
+				// Ako smo otišli predaleko desno
+				if (abs(mEngine.GetMouseX() - moseMoveStartX) >= grid->gridOffset - 10)
+				{
+					renderer->RenderGemGrid(selectedGemX, selectedGemY, grid->gridOffset, 0, Renderer::STATIONARY);
+					switchGemX = 1;
+					switchGemY = 0;
+				}
+				else
+				{
+					renderer->RenderGemGrid(selectedGemX, selectedGemY, mEngine.GetMouseX() - moseMoveStartX, 0, Renderer::HORIZONTAL_RIGHT);
+				}
+			}
+			else
+			{
+				renderer->RenderGemGrid();
+			}
 			break;
-		case VERTICAL:
-			renderer->RenderGemGrid(selectedGemX, selectedGemY, 0, mEngine.GetMouseY() - moseMoveStartY);
+		case Renderer::HORIZONTAL_LEFT:
+			// Otisli predaleko lijevo
+			if (selectedGemX > 0)
+			{
+				if (abs(mEngine.GetMouseX() - moseMoveStartX) >= grid->gridOffset - 10)
+				{
+					renderer->RenderGemGrid(selectedGemX, selectedGemY, -grid->gridOffset, 0, Renderer::HORIZONTAL_LEFT);
+					switchGemX = -1;
+					switchGemY = 0;
+				}
+				
+				else
+				{
+					renderer->RenderGemGrid(selectedGemX, selectedGemY, mEngine.GetMouseX() - moseMoveStartX, 0, Renderer::HORIZONTAL_LEFT);
+				}
+			}
+			else
+			{
+				renderer->RenderGemGrid();
+			}
 			break;
-		case STATIONARY: 
+		case Renderer::VERTICAL_UP:
+			if (selectedGemY < 7)
+			{
+				if (abs(mEngine.GetMouseY() - moseMoveStartY) >= grid->gridOffset - 10)
+				{
+					renderer->RenderGemGrid(selectedGemX, selectedGemY, 0, grid->gridOffset, Renderer::STATIONARY);
+					switchGemX = 0;
+					switchGemY = 1;
+				}
+				else
+				{
+					renderer->RenderGemGrid(selectedGemX, selectedGemY, 0, mEngine.GetMouseY() - moseMoveStartY, Renderer::VERTICAL_UP);
+				}
+			}
+			else
+			{
+				renderer->RenderGemGrid();
+			}
+			break;
+		case Renderer::VERTICAL_DOWN:
+			if(selectedGemY > 0) 
+			{
+				if (abs(mEngine.GetMouseY() - moseMoveStartY) >= grid->gridOffset - 10)
+				{
+					renderer->RenderGemGrid(selectedGemX, selectedGemY, 0, -grid->gridOffset, Renderer::STATIONARY);
+					switchGemX = 0;
+					switchGemY = -1;
+				}
+				else
+				{
+					renderer->RenderGemGrid(selectedGemX, selectedGemY, 0, mEngine.GetMouseY() - moseMoveStartY, Renderer::VERTICAL_DOWN);
+				}
+			}
+			else
+			{
+				renderer->RenderGemGrid();
+			}
+			break;
+		case Renderer::OUT_OF_BOUNDS:
 			renderer->RenderGemGrid();
 			break;
-		}	
+		}
+	
 	}
 	else
 	{
+		if (switchGemX != 0 || switchGemY != 0)
+		{
+			int gemToSwitch = gridArray[selectedGemX][selectedGemY];
+			gridArray[selectedGemX][selectedGemY] = gridArray[selectedGemX + switchGemX][selectedGemY + switchGemY];
+			gridArray[selectedGemX + switchGemX][selectedGemY + switchGemY] = gemToSwitch;
+			switchGemX = 0;
+			switchGemY = 0;
+			objectLocked = false;
+
+		}
 		renderer->RenderGemGrid();
 	}
+
+
 
 	//mEngine.Render(King::Engine::TEXTURE_BLUE, 650.0f, 450.0f);
 
@@ -82,26 +172,42 @@ bool Game::IsGemClicked()
 				selectedGemX = static_cast<int>((mEngine.GetMouseX() - grid->gridXStart) / grid->gridOffset);
 				selectedGemY = static_cast<int>((mEngine.GetMouseY() - grid->gridYStart) / grid->gridOffset);
 				moseMoveStartX = mEngine.GetMouseX();
-				moseMoveStartY = mEngine.GetMouseY();				
+				moseMoveStartY = mEngine.GetMouseY();
 				objectLocked = true;
+				
 			}
 			else
 			{
+				// Ako ti je mis otisa horizontalno
 				if (abs(mEngine.GetMouseX() - moseMoveStartX) >= abs(mEngine.GetMouseY() - moseMoveStartY))
 				{
-					std::cout << "horizontal" << std::endl;
-					gemDirection = HORIZONTAL;
+					if (mEngine.GetMouseX() > moseMoveStartX)
+					{
+							gemDirection = Renderer::HORIZONTAL_RIGHT;
+					}
+					else
+					{
+							gemDirection = Renderer::HORIZONTAL_LEFT;
+					}
 				}
+				// Ako ti je mis otisa vertikalno
 				else
 				{
-					std::cout << "vertical" << std::endl;
-					gemDirection = VERTICAL;
+					if (mEngine.GetMouseY() > moseMoveStartY)
+					{
+							gemDirection = Renderer::VERTICAL_UP;
+					}
+					else
+					{
+							gemDirection = Renderer::VERTICAL_DOWN;
+					}
 				}
 			}
 		}
 		else
 		{
-			gemDirection = STATIONARY;
+			gemDirection = Renderer::OUT_OF_BOUNDS;
+			objectLocked = false;
 		}
 	}
 	else
