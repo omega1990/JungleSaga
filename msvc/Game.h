@@ -2,38 +2,45 @@
 #include <king\Updater.h>
 #include "GemGrid.h"
 #include "Renderer.h"
+#include "Gem.h"
 
 class Game : public King::Updater 
 {
 public:
-	Game(GemGrid& passedGrid);
+	Game();
 	~Game();
 
 	void Start();
 	void Update();
 	
-	bool IsGemClicked();
-
+	bool IsAnyGemClicked();
 
 
 private:
 	King::Engine mEngine;
 	GemGrid* grid;
+	gemGrid8x8& gridArray;
 	Renderer* renderer;
+
 	float mRotation;
 	float mYellowDiamondX;
 	float mYellowDiamondY;
-	bool objectLocked = false;
-	int** gridArray;
-	int selectedGemX = -1;
-	int selectedGemY = -1;
+	bool gemLocked = false;
+	
+	int selectedGemX;
+	int selectedGemY;
 
-	float moseMoveStartX = 0.0f;
-	float moseMoveStartY = 0.0f;
 	float angle;
 
 	int switchGemX = 0;
 	int switchGemY = 0;
 
-	Renderer::direction gemDirection;
+	Gem::direction gemDirection;
+
+	Gem* clickedGem = nullptr;
+	Gem* swithingGem = nullptr;
+
+	Gem::direction GetMouseDirection(float mouseStartPositionX, float mouseStartPositionY);
+	bool Game::IsClickInsideGameArea();
+	std::pair<float, Gem::direction> GetGemOffset(int mouseX, int mouseY);
 };

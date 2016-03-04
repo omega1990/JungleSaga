@@ -83,6 +83,7 @@
     <ClCompile Include="..\external\include\king\SdlWindow.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Gem.cpp" />
     <ClCompile Include="GemGrid.cpp" />
     <ClCompile Include="Renderer.cpp" />
   </ItemGroup>
@@ -94,7 +95,9 @@
     <ClInclude Include="..\external\include\king\SdlSurface.h" />
     <ClInclude Include="..\external\include\king\SdlWindow.h" />
     <ClInclude Include="..\external\include\king\Updater.h" />
+    <ClInclude Include="Common.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="Gem.h" />
     <ClInclude Include="GemGrid.h" />
     <ClInclude Include="Renderer.h" />
   </ItemGroup>

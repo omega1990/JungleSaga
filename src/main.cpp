@@ -7,15 +7,11 @@
 #include "Game.h"
 
 
-int main(int argc, char *argv[]) {
-	GemGrid* grid = new GemGrid();
-	Game game(*grid);
+int main(int argc, char *argv[]) 
+{	
+	Game* game = new Game();	
 
-	// Test method
-	grid->PrintGrid();
-	
-	game.Start();
-
+	game->Start();
 
 	return 0;
 }
