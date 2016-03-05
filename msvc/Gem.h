@@ -28,22 +28,31 @@ public:
 	
 	direction moveDirection;
 
-	bool Selected = false;
+	bool Selected;
 
-	float GetOffset(direction dir, float mouseX, float mouseY);
 	void SetOffsetX(float passedOffsetX);
 	void SetOffsetY(float passedOffsetY);
 	void SetOffset(float passedOffsetX, float passedOffsetY);
+	void SetGravityOffsetY(float passedOffsetY);
 
+	float GetOffset(direction dir, float mouseX, float mouseY);
 	float GetOffsetX() { return offsetX; };
 	float GetOffsetY() { return offsetY; };
 
+	void SetToBeDestroyed(bool passedDestroyed);
+	bool GetToBeDestroyed();
+
 	void ResetOffset();
+
+	void SetGravity(bool passedGravity) { gravity = passedGravity; };
+	bool GetGravity() { return gravity; };
 
 private:
 	King::Engine::Texture gemColor;
 	float offsetX;
 	float offsetY;
+	bool toBeDestroyed;
 
+	bool gravity;
 };
 

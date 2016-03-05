@@ -27,7 +27,7 @@ void Renderer::RenderGemGrid()
 	{
 		for (int j = 0; j < 8; ++j)
 		{
-			if (gridArray[i][j]->GetOffsetX() > 0 || gridArray[i][j]->GetOffsetY() > 0)
+			if (gridArray[i][j]->Selected)
 			{
 				isSelected = true;
 				x = i;

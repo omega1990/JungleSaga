@@ -29,15 +29,43 @@ void Game::Update()
 
 	mRotation += mEngine.GetLastFrameSeconds();
 
-	CheckGemInteraction();
+	HandleGemInteraction();
 
 	renderer->RenderGemGrid();
 
 	std::vector<std::pair<int, int>> gemsToDestroy = grid->IsCascadePresent();
+
 	renderer->RenderToBeDestroyed(gemsToDestroy);
 
-	grid->DestroyGems(gemsToDestroy);
-	gemsToDestroy.clear();
+	/*grid->MarkToDestroy(gemsToDestroy);
+	grid->ActivateGravity(gemsToDestroy);
+	std::cout << "Gravity activated " << std::endl;
+	*/
+	/*if (clock + 0.1f < mRotation)
+	{
+		if (grid->GravityPull(gemsToDestroy))
+		{
+			grid->DestroyGems(gemsToDestroy);
+			score += gemsToDestroy.size();
+
+		}
+		clock += mEngine.GetLastFrameSeconds();
+	}*/
+
+	// Radije posalji referencu
+	if (gemsToDestroy.size() > 0)
+	{
+		referenceClock += mEngine.GetLastFrameSeconds();
+		if ((referenceClock > 1.0f))
+		{
+			grid->DestroyGems(gemsToDestroy);
+			score += gemsToDestroy.size();
+			gemsToDestroy.clear();
+			referenceClock = 0.0f;
+		}
+	}
+
+
 
 	std::string s = std::to_string(score);
 	char const *pchar = s.c_str();
@@ -70,7 +98,7 @@ void Game::Update()
 
 }
 
-bool Game::CheckGemInteraction()
+bool Game::HandleGemInteraction()
 {
 	if (mEngine.GetMouseButtonDown())
 	{
@@ -81,6 +109,7 @@ bool Game::CheckGemInteraction()
 			{
 				selectedGemX = static_cast<int>((mEngine.GetMouseX() - grid->gridXStart) / grid->gridOffset);
 				selectedGemY = static_cast<int>((mEngine.GetMouseY() - grid->gridYStart) / grid->gridOffset);
+				mEngine.Render(King::Engine::TEXTURE_SELECTED, grid->gridXStart + selectedGemX*grid->gridOffset - 4.0f, grid->gridYStart + selectedGemY*grid->gridOffset - 4.0f);
 			}
 
 			clickedGem = gridArray[selectedGemX][selectedGemY];
@@ -91,15 +120,25 @@ bool Game::CheckGemInteraction()
 				clickedGem->mouseMoveStartX = mEngine.GetMouseX();
 				clickedGem->mouseMoveStartY = mEngine.GetMouseY();
 				gemLocked = true;
+				// Set highlight texture if the gem is locked
+				//clickedGem->SetGemColor(static_cast<King::Engine::Texture>(clickedGem->GetGemColor() + 1));
 			}
 			else
 			{
+				swipePerformed = true;
 				gemDirection = GetMouseDirection(clickedGem->mouseMoveStartX, clickedGem->mouseMoveStartY);
 				std::pair<float, Gem::direction> offsetDirection = GetGemOffset(clickedGem->mouseMoveStartX, clickedGem->mouseMoveStartY);
 
 				if (swithingGem != nullptr)
 				{
 					swithingGem->ResetOffset();
+				}
+
+
+				if (clickedGem->mouseMoveStartX == mEngine.GetMouseX() && clickedGem->mouseMoveStartY == mEngine.GetMouseY())
+				{
+					swipePerformed = false;
+					mEngine.Render(King::Engine::TEXTURE_SELECTED, grid->gridXStart + selectedGemX*grid->gridOffset - 4.0f, grid->gridYStart + selectedGemY*grid->gridOffset - 4.0f);
 				}
 
 				//Setiraj offset gema
@@ -137,14 +176,20 @@ bool Game::CheckGemInteraction()
 	}
 	else
 	{
-		if (clickedGem != nullptr && swithingGem != nullptr)
+		if (!swipePerformed)
 		{
+			mEngine.Render(King::Engine::TEXTURE_SELECTED, grid->gridXStart + selectedGemX*grid->gridOffset - 4.0f, grid->gridYStart + selectedGemY*grid->gridOffset - 4.0f);
+		}
+
+		else if (clickedGem != nullptr && swithingGem != nullptr)
+		{
+			//clickedGem->SetGemColor(static_cast<King::Engine::Texture>(clickedGem->GetGemColor() - 1));
 			clickedGem->Selected = false;
 			bool performSwitch = false;
-			if (clickedGem->GetOffsetX() > 30 
-				|| clickedGem->GetOffsetY() > 30
-				|| clickedGem->GetOffsetX() < -30
-				|| clickedGem->GetOffsetY() < -30)
+			if (clickedGem->GetOffsetX() > 10
+				|| clickedGem->GetOffsetY() > 10
+				|| clickedGem->GetOffsetX() < -10
+				|| clickedGem->GetOffsetY() < -10)
 			{
 				performSwitch = true;
 			}
@@ -160,11 +205,10 @@ bool Game::CheckGemInteraction()
 				*swithingGem = *temp;
 				delete temp;
 			}
-		}	
-
-		gemLocked = false;
-		clickedGem = nullptr;
-		swithingGem = nullptr;
+			gemLocked = false;
+			clickedGem = nullptr;
+			swithingGem = nullptr;
+		}
 	}
 
 	return gridArray[selectedGemX][selectedGemY]->Selected;

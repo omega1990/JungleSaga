@@ -14,9 +14,7 @@ public:
 	void Start();
 	void Update();
 	
-	bool CheckGemInteraction();
-
-
+	bool HandleGemInteraction();
 private:
 	int score;
 
@@ -26,9 +24,9 @@ private:
 	Renderer* renderer;
 
 	float mRotation;
-	float mYellowDiamondX;
-	float mYellowDiamondY;
+	float referenceClock = 0.0f;
 	bool gemLocked = false;
+	bool swipePerformed = false;
 	
 	int selectedGemX;
 	int selectedGemY;

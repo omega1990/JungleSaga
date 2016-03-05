@@ -19,8 +19,14 @@ public:
 	gemGrid8x8& getGemGrid();
 	King::Engine::Texture GemGrid::GenerateRandomTexture() const;
 	std::vector<std::pair<int, int>> IsCascadePresent();
-
 	void DestroyGems(std::vector<std::pair<int, int>> gemsToDestroy);
+
+	void ActivateGravity(std::vector<std::pair<int, int>> gemsToDestroy);
+	bool GravityPull(std::vector<std::pair<int, int>> gemsToDestroy);
+
+	bool IsGridLocked();
+	void LockGrid();
+	void UnlockGrid();
 
 	// Constants
 	const float gridXStart = 330.0f;
@@ -28,11 +34,15 @@ public:
 	const float gridOffset = 43.0f;
 private:
 	gemGrid8x8 gemGrid;
+	std::vector<std::pair<int,int>> pullValues;
 
 	// Pointer to engine
 	King::Engine* engine;
 
+	bool gridLocked;
+
 	// Private functions
 	bool IsInCascadeInitial(int x, int y, King::Engine::Texture color);
+	void MarkToDestroy(std::vector<std::pair<int, int>> gemsToDestroy);
 };
 

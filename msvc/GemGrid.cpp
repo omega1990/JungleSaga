@@ -8,6 +8,12 @@
 GemGrid::GemGrid()
 {
 	InitializeGrid();
+
+
+	for (int i = 0; i < GRID_WIDTH; ++i)
+	{
+		pullValues.push_back(std::make_pair(i, 0));
+	}
 }
 
 GemGrid::~GemGrid()
@@ -98,7 +104,6 @@ std::vector<std::pair<int, int>> GemGrid::IsCascadePresent()
 				if (color == gemGrid[i][j]->GetGemColor())
 				{
 					hitCount++;
-					std::cout << hitCount << std::endl;
 				}
 				else
 				{
@@ -147,7 +152,6 @@ std::vector<std::pair<int, int>> GemGrid::IsCascadePresent()
 				if (color == gemGrid[i][j]->GetGemColor())
 				{
 					hitCount++;
-					std::cout << hitCount << std::endl;
 				}
 				else
 				{
@@ -205,26 +209,118 @@ gemGrid8x8& GemGrid::getGemGrid()
 
 void GemGrid::DestroyGems(std::vector<std::pair<int, int>> gemsToDestroy)
 {
-	for (auto pair : gemsToDestroy)
-	{
-		gemGrid[pair.first][pair.second]->SetGemColor(King::Engine::TEXTURE_EMPTY);
-	}
+	MarkToDestroy(gemsToDestroy); 
 
-	/*for (int j = 0; j < 8; ++j)
+	for (int row = 0; row < GRID_WIDTH; ++row)
 	{
-		for (int i = 0; i < 7; ++i)
+		for (int column = 0; column < GRID_HEIGHT; ++column)
 		{
-			if (gemGrid[i][j + 1]->GetGemColor() == King::Engine::TEXTURE_EMPTY)
+			gemGrid[column][row]->ResetOffset();
+			if (gemGrid[column][row]->GetToBeDestroyed())
 			{
-				int z = j;
-				while (z != -1)
+				gemGrid[column][row]->SetToBeDestroyed(false);
+				if (row == 0)
 				{
-					gemGrid[i][z + 1]->SetGemColor(gemGrid[i][z]->GetGemColor());
-					--z;
+					gemGrid[column][row]->SetGemColor(GenerateRandomTexture());
 				}
-				gemGrid[i][0]->SetGemColor(GenerateRandomTexture());
+				else
+				{
+					int currentRow = row;
+					Gem* gemToDestroy = gemGrid[column][row];
+
+					while (currentRow > 0)
+					{
+						gemGrid[column][currentRow] = gemGrid[column][currentRow - 1];
+						--currentRow;
+					}
+
+					// Pridjeli objekt koji se unistava prvome u stupcu
+					gemGrid[column][0] = gemToDestroy;
+					gemGrid[column][0]->SetGemColor(GenerateRandomTexture());
+				}
 			}
 		}
-	}*/
-
+	}
 }
+
+void GemGrid::MarkToDestroy(std::vector<std::pair<int, int>> gemsToDestroy)
+{
+
+	for (auto pair : gemsToDestroy)
+	{
+		gemGrid[pair.first][pair.second]->SetToBeDestroyed(true);
+	}
+}
+
+bool GemGrid::IsGridLocked()
+{
+	return gridLocked;
+}
+
+void GemGrid::LockGrid()
+{
+	gridLocked = true;
+}
+
+void GemGrid::UnlockGrid() 
+{
+	gridLocked = false;
+}
+
+
+//
+//void GemGrid::ActivateGravity(std::vector<std::pair<int, int>> gemsToDestroy)
+//{
+//	for (int row = 0; row < GRID_WIDTH; ++row)
+//	{
+//		for (int column = 0; column < GRID_HEIGHT; ++column)
+//		{
+//			if (gemGrid[column][row]->GetGemColor() == King::Engine::TEXTURE_EMPTY)
+//			{
+//				int currentRow = row - 1;
+//				while (currentRow >= 0)
+//				{
+//					if (gemGrid[column][currentRow]->GetGemColor() != King::Engine::TEXTURE_EMPTY)
+//						gemGrid[column][currentRow]->SetGravity(true);
+//					--currentRow;
+//				}
+//			}
+//		}
+//	}
+//}
+//
+//bool GemGrid::GravityPull(std::vector<std::pair<int, int>> gemsToDestroy)
+//{
+//	bool pullEnd = false;
+//	for (int row = 0; row < GRID_WIDTH; ++row)
+//	{
+//		for (int column = 0; column < GRID_HEIGHT; ++column)
+//		{
+//			if (gemGrid[column][row]->GetGravity())
+//			{
+//				int maxOffset = 0;
+//
+//				for (auto gem : gemsToDestroy)
+//				{
+//					if (gem.first == column && gem.second >= row)
+//					{
+//						++maxOffset;
+//					}
+//				}
+//
+//				gemGrid[column][row]->SetGravityOffsetY(gemGrid[column][row]->GetOffsetY() + 3.0f);
+//				if (gemGrid[column][row]->GetOffsetY() >= gridOffset*maxOffset)
+//				{
+//					gemGrid[column][row]->SetGravity(false);
+//					pullEnd = true;
+//				}
+//			}
+//			else if (gemGrid[column][row]->GetGemColor() == King::Engine::TEXTURE_EMPTY &&
+//				row == 0)
+//			{
+//				pullEnd = true;
+//			}
+//		}
+//	}
+//	return pullEnd;
+//}

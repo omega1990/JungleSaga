@@ -5,6 +5,9 @@ Gem::Gem(King::Engine::Texture passedGemColor)
 	, offsetX(0.0f)
 	, offsetY(0.0f)
 	, moveDirection(Gem::STATIONARY)
+	, gravity(false)
+	, toBeDestroyed(false)
+	, Selected(false)
 {
 }
 
@@ -87,6 +90,11 @@ void Gem::SetOffsetY(float passedOffsetY)
 		offsetY = passedOffsetY;
 }
 
+void Gem::SetGravityOffsetY(float passedOffsetY)
+{
+	offsetY = passedOffsetY;
+}
+
 void Gem::ResetOffset()
 {
 	offsetX = 0.0f;
@@ -96,4 +104,15 @@ void Gem::ResetOffset()
 void Gem::SetGemColor(King::Engine::Texture color)
 {
 	gemColor = color;
+}
+
+
+void Gem::SetToBeDestroyed(bool passedDestroyed)
+{
+	toBeDestroyed = passedDestroyed;
+}
+
+bool Gem::GetToBeDestroyed()
+{
+	return toBeDestroyed;
 }
