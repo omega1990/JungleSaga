@@ -19,7 +19,7 @@ void Renderer::RenderGemGrid()
 {
 	gemGrid8x8& gridArray = grid->getGemGrid();
 	bool isSelected = false;
-	int x = -1; 
+	int x = -1;
 	int y = -1;
 
 	// Draw complete gem grid
@@ -30,7 +30,7 @@ void Renderer::RenderGemGrid()
 			if (gridArray[i][j]->GetOffsetX() > 0 || gridArray[i][j]->GetOffsetY() > 0)
 			{
 				isSelected = true;
-				x = i; 
+				x = i;
 				y = j;
 			}
 			else
@@ -48,4 +48,19 @@ void Renderer::RenderGemGrid()
 			, grid->gridXStart + x * grid->gridOffset + gridArray[x][y]->GetOffsetX()
 			, grid->gridYStart + y * grid->gridOffset + gridArray[x][y]->GetOffsetY());
 	}
+}
+
+void Renderer::RenderToBeDestroyed(std::vector<std::pair<int,int>> gemsToBeDestroyed)
+{
+	gemGrid8x8& gridArray = grid->getGemGrid();
+	bool isSelected = false;
+	int x = -1;
+	int y = -1;
+
+	for (auto gemCoordinade : gemsToBeDestroyed)
+	{
+		mEngine->Render(static_cast<King::Engine::Texture>(King::Engine::TEXTURE_TBD)
+			, grid->gridXStart + gemCoordinade.first * grid->gridOffset + gridArray[gemCoordinade.first][gemCoordinade.second]->GetOffsetX()
+			, grid->gridYStart + gemCoordinade.second * grid->gridOffset + gridArray[gemCoordinade.first][gemCoordinade.second]->GetOffsetY());
+	}	
 }

@@ -34,6 +34,31 @@ float Gem::GetOffset(direction dir, float mouseX, float mouseY)
 	}
 }
 
+void Gem::SetOffset(float passedOffsetX, float passedOffsetY)
+{
+	if (passedOffsetX > MAX_GEM_OFFSET)
+	{
+		offsetX = MAX_GEM_OFFSET;
+	}
+	else if (passedOffsetX < -MAX_GEM_OFFSET)
+	{
+		offsetX = -MAX_GEM_OFFSET;
+	}
+	else
+		offsetX = passedOffsetX;
+
+	if (passedOffsetY > MAX_GEM_OFFSET)
+	{
+		offsetY = MAX_GEM_OFFSET;
+	}
+	else if (passedOffsetY < -MAX_GEM_OFFSET)
+	{
+		offsetY = -MAX_GEM_OFFSET;
+	}
+	else
+		offsetY = passedOffsetY;
+}
+
 void Gem::SetOffsetX(float passedOffsetX)
 {
 	if (passedOffsetX > MAX_GEM_OFFSET)
@@ -57,7 +82,6 @@ void Gem::SetOffsetY(float passedOffsetY)
 	else if (passedOffsetY < -MAX_GEM_OFFSET)
 	{
 		offsetY = -MAX_GEM_OFFSET;
-		std::cout << "show" << std::endl;
 	}
 	else
 		offsetY = passedOffsetY;
@@ -67,4 +91,9 @@ void Gem::ResetOffset()
 {
 	offsetX = 0.0f;
 	offsetY = 0.0f;
+}
+
+void Gem::SetGemColor(King::Engine::Texture color)
+{
+	gemColor = color;
 }

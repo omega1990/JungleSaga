@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <random>
+#include <tuple>
 
 #include <king\Engine.h>
 #include "Gem.h"
@@ -17,6 +18,9 @@ public:
 
 	gemGrid8x8& getGemGrid();
 	King::Engine::Texture GemGrid::GenerateRandomTexture() const;
+	std::vector<std::pair<int, int>> IsCascadePresent();
+
+	void DestroyGems(std::vector<std::pair<int, int>> gemsToDestroy);
 
 	// Constants
 	const float gridXStart = 330.0f;

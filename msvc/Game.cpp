@@ -4,8 +4,7 @@
 Game::Game()
 	: mEngine("./assets")
 	, mRotation(0.0f)
-	, mYellowDiamondX(100.0f)
-	, mYellowDiamondY(100.0f)
+	, score(0)
 	, grid(new GemGrid())
 	, gridArray(grid->getGemGrid())
 	, renderer(new Renderer(mEngine, *grid))
@@ -30,24 +29,24 @@ void Game::Update()
 
 	mRotation += mEngine.GetLastFrameSeconds();
 
-	if (IsAnyGemClicked())
-	{
-		renderer->RenderGemGrid();
-	}
-	else
-	{
-		/*if (switchGemX != 0 || switchGemY != 0)
-		{
-			Gem* gemToSwitch = gridArray[selectedGemX][selectedGemY];
-			gridArray[selectedGemX][selectedGemY] = gridArray[selectedGemX + switchGemX][selectedGemY + switchGemY];
-			gridArray[selectedGemX + switchGemX][selectedGemY + switchGemY] = gemToSwitch;
-			switchGemX = 0;
-			switchGemY = 0;
-			gemLocked = false;
+	CheckGemInteraction();
 
-		}*/
-		renderer->RenderGemGrid();
-	}
+	renderer->RenderGemGrid();
+
+	std::vector<std::pair<int, int>> gemsToDestroy = grid->IsCascadePresent();
+	renderer->RenderToBeDestroyed(gemsToDestroy);
+
+	grid->DestroyGems(gemsToDestroy);
+	gemsToDestroy.clear();
+
+	std::string s = std::to_string(score);
+	char const *pchar = s.c_str();
+
+	mEngine.Write(pchar, 50.0f, 50.0f);
+
+	s = std::to_string(mRotation);
+	pchar = s.c_str();
+	mEngine.Write(pchar, 50.0f, 70.0f);
 
 	//mEngine.Render(King::Engine::TEXTURE_BLUE, 650.0f, 450.0f);
 
@@ -71,7 +70,7 @@ void Game::Update()
 
 }
 
-bool Game::IsAnyGemClicked()
+bool Game::CheckGemInteraction()
 {
 	if (mEngine.GetMouseButtonDown())
 	{
@@ -97,58 +96,34 @@ bool Game::IsAnyGemClicked()
 			{
 				gemDirection = GetMouseDirection(clickedGem->mouseMoveStartX, clickedGem->mouseMoveStartY);
 				std::pair<float, Gem::direction> offsetDirection = GetGemOffset(clickedGem->mouseMoveStartX, clickedGem->mouseMoveStartY);
-				
+
+				if (swithingGem != nullptr)
+				{
+					swithingGem->ResetOffset();
+				}
+
 				//Setiraj offset gema
 				switch (offsetDirection.second)
 				{
 				case Gem::HORIZONTAL_LEFT:
-					if (swithingGem != nullptr)
-					{
-						swithingGem->ResetOffset();
-					}
 					swithingGem = gridArray[selectedGemX - 1][selectedGemY];
-					clickedGem->SetOffsetX(offsetDirection.first);
-					swithingGem->SetOffsetX(-offsetDirection.first);
-					clickedGem->SetOffsetY(0);
-					swithingGem->SetOffsetY(0);
-
-					std::cout << clickedGem->GetGemColor() << ":" << swithingGem->GetGemColor() << std::endl;
+					clickedGem->SetOffset(offsetDirection.first, 0);
+					swithingGem->SetOffset(-offsetDirection.first, 0);
 					break;
 				case Gem::HORIZONTAL_RIGHT:
-					if (swithingGem != nullptr)
-					{
-						swithingGem->ResetOffset();
-					}
 					swithingGem = gridArray[selectedGemX + 1][selectedGemY];
-					clickedGem->SetOffsetX(-offsetDirection.first);
-					swithingGem->SetOffsetX(offsetDirection.first);
-					clickedGem->SetOffsetY(0);
-					swithingGem->SetOffsetY(0);
-					std::cout << clickedGem->GetGemColor() << ":" << swithingGem->GetGemColor() << std::endl;
+					clickedGem->SetOffset(-offsetDirection.first, 0);
+					swithingGem->SetOffset(offsetDirection.first, 0);
 					break;
 				case Gem::VERTICAL_UP:
-					if (swithingGem != nullptr)
-					{
-						swithingGem->ResetOffset();
-					}
 					swithingGem = gridArray[selectedGemX][selectedGemY - 1];
-					clickedGem->SetOffsetY(offsetDirection.first);
-					swithingGem->SetOffsetY(-offsetDirection.first);
-					clickedGem->SetOffsetX(0);
-					swithingGem->SetOffsetX(0);
-					std::cout << clickedGem->GetGemColor() << ":" << swithingGem->GetGemColor() << std::endl;
+					clickedGem->SetOffset(0, offsetDirection.first);
+					swithingGem->SetOffset(0, -offsetDirection.first);
 					break;
 				case Gem::VERTICAL_DOWN:
-					if (swithingGem != nullptr)
-					{
-						swithingGem->ResetOffset();
-					}
 					swithingGem = gridArray[selectedGemX][selectedGemY + 1];
-					clickedGem->SetOffsetY(-offsetDirection.first);
-					swithingGem->SetOffsetY(offsetDirection.first);
-					clickedGem->SetOffsetX(0);
-					swithingGem->SetOffsetX(0);
-					std::cout << clickedGem->GetGemColor() << ":"<< swithingGem->GetGemColor() << std::endl;
+					clickedGem->SetOffset(0, -offsetDirection.first);
+					swithingGem->SetOffset(0, offsetDirection.first);
 					break;
 				default:
 					clickedGem->ResetOffset();
@@ -162,34 +137,30 @@ bool Game::IsAnyGemClicked()
 	}
 	else
 	{
-		if (clickedGem != nullptr)
+		if (clickedGem != nullptr && swithingGem != nullptr)
 		{
 			clickedGem->Selected = false;
+			bool performSwitch = false;
+			if (clickedGem->GetOffsetX() > 30 
+				|| clickedGem->GetOffsetY() > 30
+				|| clickedGem->GetOffsetX() < -30
+				|| clickedGem->GetOffsetY() < -30)
+			{
+				performSwitch = true;
+			}
 			clickedGem->ResetOffset();
-		}
-
-		if (swithingGem != nullptr)
-		{
 			swithingGem->ResetOffset();
-		}
 
-		switch (gemDirection)
-		{
-		case Gem::HORIZONTAL_LEFT:
-
-			break;
-		case Gem::HORIZONTAL_RIGHT:
-
-			break;
-		case Gem::VERTICAL_UP:
-
-			break;
-		case Gem::VERTICAL_DOWN:
-
-			break;
-		default:
-			break;
-		}
+			if (performSwitch)
+			{
+				Gem* temp = new Gem(static_cast<King::Engine::Texture>(1));
+				// Perform gem switching
+				*temp = *clickedGem;
+				*clickedGem = *swithingGem;
+				*swithingGem = *temp;
+				delete temp;
+			}
+		}	
 
 		gemLocked = false;
 		clickedGem = nullptr;

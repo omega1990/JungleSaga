@@ -20,11 +20,11 @@ public:
 		TO_BE_SWITCHED
 	};
 
-	King::Engine::Texture GetGemColor();
+	King::Engine::Texture GetGemColor(); 
+	void SetGemColor(King::Engine::Texture color);
 
 	float mouseMoveStartX;
 	float mouseMoveStartY;
-
 	
 	direction moveDirection;
 
@@ -33,6 +33,7 @@ public:
 	float GetOffset(direction dir, float mouseX, float mouseY);
 	void SetOffsetX(float passedOffsetX);
 	void SetOffsetY(float passedOffsetY);
+	void SetOffset(float passedOffsetX, float passedOffsetY);
 
 	float GetOffsetX() { return offsetX; };
 	float GetOffsetY() { return offsetY; };

@@ -16,6 +16,8 @@ namespace King {
 			TEXTURE_PURPLE,
 			TEXTURE_RED,
 			TEXTURE_YELLOW,
+			TEXTURE_TBD,
+			TEXTURE_EMPTY,
 			TEXTURE_MAX
 		};
 
