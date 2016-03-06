@@ -12,6 +12,8 @@ public:
 	void RenderBackground();
 	void RenderGemGrid();
 	void RenderToBeDestroyed(std::vector<std::pair<int, int>> gemsToBeDestroyed);
+	void RenderTop();
+
 
 private:
 	King::Engine* mEngine;

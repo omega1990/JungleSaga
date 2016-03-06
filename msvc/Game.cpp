@@ -6,7 +6,7 @@ Game::Game()
 	, mRotation(0.0f)
 	, score(0)
 	, grid(new GemGrid())
-	, gridArray(grid->getGemGrid())
+	, gridArray(grid->GetGemGrid())
 	, renderer(new Renderer(mEngine, *grid))
 	, selectedGemX(0)
 	, selectedGemY(0)
@@ -27,23 +27,31 @@ void Game::Update()
 {
 	renderer->RenderBackground();
 
-	mRotation += mEngine.GetLastFrameSeconds();
+	//mRotation += mEngine.GetLastFrameSeconds();
 
-	HandleGemInteraction();
+	referenceClock += mEngine.GetLastFrameSeconds();
 
 	renderer->RenderGemGrid();
 
-	// Check if there are any hits in the grid
-	if (grid->IsCascadePresent())
+	if (!grid->IsGravityActive())
 	{
-		renderer->RenderToBeDestroyed(grid->GetGemsToDestroy());
+		HandleGemInteraction();
 
-		referenceClock += mEngine.GetLastFrameSeconds();
-		if ((referenceClock > 1.0f))
-		{	
-			score += grid->DestroyGems();
-			referenceClock = 0.0f;
+		if (grid->IsCascadePresent())
+		{
+			renderer->RenderToBeDestroyed(grid->GetGemsToDestroy());
+			
+			//referenceClock += mEngine.GetLastFrameSeconds();
+			//if ((referenceClock > 2.0f))
+			//{
+				score += grid->DestroyGems();
+				//referenceClock = 0.0f;
+			//}
 		}
+	}
+	else
+	{
+		grid->GravityPull();
 	}
 
 	std::string s = std::to_string(score);
@@ -51,9 +59,9 @@ void Game::Update()
 
 	mEngine.Write(pchar, 50.0f, 50.0f);
 
-	s = std::to_string(mRotation);
+	s = std::to_string(60 - static_cast<int>(referenceClock));
 	pchar = s.c_str();
-	mEngine.Write(pchar, 50.0f, 70.0f);
+	mEngine.Write(pchar, 100.0f, 450.0f);
 
 	//mEngine.Render(King::Engine::TEXTURE_BLUE, 650.0f, 450.0f);
 
@@ -74,7 +82,7 @@ void Game::Update()
 	//mEngine.Write("move me!", mYellowDiamondX, mYellowDiamondY + 70.0f);		
 
 	//mEngine.Write("Jelena", mEngine.GetWidth() / 2.0f, mEngine.GetHeight() / 2.0f, mRotation * 20.5f);
-
+	renderer->RenderTop();
 }
 
 bool Game::HandleGemInteraction()

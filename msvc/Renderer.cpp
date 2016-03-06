@@ -15,17 +15,22 @@ void Renderer::RenderBackground()
 	mEngine->Render(King::Engine::TEXTURE_BACKGROUND, 0, 0);
 }
 
+void Renderer::RenderTop()
+{
+	mEngine->Render(King::Engine::TEXTURE_TOP, 214, 0);
+}
+
 void Renderer::RenderGemGrid()
 {
-	gemGrid8x8& gridArray = grid->getGemGrid();
+	gemGrid8x8& gridArray = grid->GetGemGrid();
 	bool isSelected = false;
 	int x = -1;
 	int y = -1;
 
 	// Draw complete gem grid
-	for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < GRID_WIDTH; ++i)
 	{
-		for (int j = 0; j < 8; ++j)
+		for (int j = 0; j < GRID_HEIGHT; ++j)
 		{
 			if (gridArray[i][j]->Selected)
 			{
@@ -35,9 +40,19 @@ void Renderer::RenderGemGrid()
 			}
 			else
 			{
+				float offset;
+				if (j <= grid->GetColumnOffsets().at(i).first && grid->GetColumnOffset(i) < 0)
+				{
+					offset = grid->GetColumnOffset(i);
+				}
+				else
+				{
+					offset = 0;
+				}
+
 				mEngine->Render(static_cast<King::Engine::Texture>(gridArray[i][j]->GetGemColor())
 					, grid->gridXStart + i * grid->gridOffset + gridArray[i][j]->GetOffsetX()
-					, grid->gridYStart + j * grid->gridOffset + gridArray[i][j]->GetOffsetY());
+					, grid->gridYStart + j * grid->gridOffset + gridArray[i][j]->GetOffsetY() + offset);
 			}
 		}
 	}
@@ -48,11 +63,13 @@ void Renderer::RenderGemGrid()
 			, grid->gridXStart + x * grid->gridOffset + gridArray[x][y]->GetOffsetX()
 			, grid->gridYStart + y * grid->gridOffset + gridArray[x][y]->GetOffsetY());
 	}
+
+
 }
 
-void Renderer::RenderToBeDestroyed(std::vector<std::pair<int,int>> gemsToBeDestroyed)
+void Renderer::RenderToBeDestroyed(std::vector<std::pair<int, int>> gemsToBeDestroyed)
 {
-	gemGrid8x8& gridArray = grid->getGemGrid();
+	gemGrid8x8& gridArray = grid->GetGemGrid();
 	bool isSelected = false;
 	int x = -1;
 	int y = -1;
@@ -62,5 +79,5 @@ void Renderer::RenderToBeDestroyed(std::vector<std::pair<int,int>> gemsToBeDestr
 		mEngine->Render(static_cast<King::Engine::Texture>(King::Engine::TEXTURE_TBD)
 			, grid->gridXStart + gemCoordinade.first * grid->gridOffset + gridArray[gemCoordinade.first][gemCoordinade.second]->GetOffsetX()
 			, grid->gridYStart + gemCoordinade.second * grid->gridOffset + gridArray[gemCoordinade.first][gemCoordinade.second]->GetOffsetY());
-	}	
+	}
 }

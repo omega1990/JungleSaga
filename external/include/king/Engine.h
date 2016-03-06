@@ -20,6 +20,7 @@ namespace King {
 			TEXTURE_TBD,
 			TEXTURE_EMPTY,
 			TEXTURE_SELECTED,
+			TEXTURE_TOP,
 			TEXTURE_MAX
 		};
 
