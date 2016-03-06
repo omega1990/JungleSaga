@@ -14,6 +14,9 @@ public:
 	void RenderToBeDestroyed(std::vector<std::pair<int, int>> gemsToBeDestroyed);
 	void RenderTop();
 
+	void RenderSelected(int selectedGemX, int selectedGemY);
+
+
 
 private:
 	King::Engine* mEngine;

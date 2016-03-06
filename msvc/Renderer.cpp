@@ -81,3 +81,9 @@ void Renderer::RenderToBeDestroyed(std::vector<std::pair<int, int>> gemsToBeDest
 			, grid->gridYStart + gemCoordinade.second * grid->gridOffset + gridArray[gemCoordinade.first][gemCoordinade.second]->GetOffsetY());
 	}
 }
+
+void Renderer::RenderSelected(int selectedGemX, int selectedGemY)
+{
+	if(selectedGemX != -1 && selectedGemY != -1)
+		mEngine->Render(King::Engine::TEXTURE_SELECTED, grid->gridXStart + selectedGemX*grid->gridOffset - 4.0f, grid->gridYStart + selectedGemY*grid->gridOffset - 4.0f);
+}

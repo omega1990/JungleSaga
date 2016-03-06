@@ -33,6 +33,9 @@ private:
 	int selectedGemX;
 	int selectedGemY;
 
+	int clickDown = 0;
+	bool clickUp = false;;
+
 	float angle;
 
 	int switchGemX = 0;
@@ -46,4 +49,6 @@ private:
 	Gem::direction GetMouseDirection(float mouseStartPositionX, float mouseStartPositionY);
 	bool Game::IsClickInsideGameArea();
 	std::pair<float, Gem::direction> GetGemOffset(int mouseX, int mouseY);
+	void Game::setClickedGemCoordinates();
+	void Game::resetClickedGemCoordinates();
 };
