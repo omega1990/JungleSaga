@@ -108,7 +108,8 @@ void Game::handleGemClick()
 			if (gemLocked)
 			{
 				// If it is neighbour, switch them
-				if (abs(selectedGemX - gemX) == 1 || abs(selectedGemY - gemY) == 1)
+				if ((abs(selectedGemX - gemX) == 1 && abs(selectedGemY - gemY) == 0) || 
+					(abs(selectedGemY - gemY) == 1 && abs(selectedGemX - gemX) == 0))
 				{
 					Gem* switchingGem;
 

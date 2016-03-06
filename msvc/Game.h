@@ -49,6 +49,6 @@ private:
 	Gem::direction GetMouseDirection(float mouseStartPositionX, float mouseStartPositionY);
 	bool Game::IsClickInsideGameArea();
 	std::pair<float, Gem::direction> GetGemOffset(int mouseX, int mouseY);
-	void Game::setClickedGemCoordinates();
+	void Game::handleGemClick();
 	void Game::resetClickedGemCoordinates();
 };
