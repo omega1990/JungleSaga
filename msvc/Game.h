@@ -27,7 +27,9 @@ private:
 	float referenceClock = 0.0f;
 	bool gemLocked = false;
 	bool swipePerformed = false;
-	
+	bool firstGemLocked = false;
+	bool clickReleased = false;
+
 	int selectedGemX;
 	int selectedGemY;
 

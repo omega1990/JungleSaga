@@ -83,11 +83,11 @@ bool GemGrid::IsInCascadeInitial(int x, int y, King::Engine::Texture color)
 }
 
 // Check left and top
-std::vector<std::pair<int, int>> GemGrid::IsCascadePresent()
+bool GemGrid::IsCascadePresent()
 {
-	int hitCount = 0;
+	gemsToDestroy.clear();
 
-	std::vector<std::pair<int, int>> gemsToDestroy;
+	int hitCount = 0;
 
 	King::Engine::Texture color;
 
@@ -185,7 +185,8 @@ std::vector<std::pair<int, int>> GemGrid::IsCascadePresent()
 		}
 	}
 
-	return gemsToDestroy;
+	if (gemsToDestroy.size() > 0) return true;
+	else return false;
 }
 
 // Testing function
@@ -207,9 +208,9 @@ gemGrid8x8& GemGrid::getGemGrid()
 }
 
 
-void GemGrid::DestroyGems(std::vector<std::pair<int, int>> gemsToDestroy)
+int GemGrid::DestroyGems()
 {
-	MarkToDestroy(gemsToDestroy); 
+	MarkToDestroy(); 
 
 	for (int row = 0; row < GRID_WIDTH; ++row)
 	{
@@ -241,9 +242,13 @@ void GemGrid::DestroyGems(std::vector<std::pair<int, int>> gemsToDestroy)
 			}
 		}
 	}
+	int score = gemsToDestroy.size();
+	gemsToDestroy.clear();
+
+	return score;
 }
 
-void GemGrid::MarkToDestroy(std::vector<std::pair<int, int>> gemsToDestroy)
+void GemGrid::MarkToDestroy()
 {
 
 	for (auto pair : gemsToDestroy)
@@ -267,6 +272,10 @@ void GemGrid::UnlockGrid()
 	gridLocked = false;
 }
 
+std::vector<std::pair<int, int>> GemGrid::GetGemsToDestroy()
+{
+	return gemsToDestroy;
+}
 
 //
 //void GemGrid::ActivateGravity(std::vector<std::pair<int, int>> gemsToDestroy)
