@@ -25,6 +25,11 @@ void Game::Start()
 
 void Game::Update()
 {
+	if (grid->gemMoving)
+	{
+		grid->MoveGem();
+	}
+	
 	renderer->RenderBackground();
 
 	//mRotation += mEngine.GetLastFrameSeconds();
@@ -33,7 +38,7 @@ void Game::Update()
 
 	renderer->RenderGemGrid();
 
-	if (!grid->IsGravityActive())
+	if (!grid->IsGridLocked())
 	{
 		HandleGemInteraction();
 
@@ -107,15 +112,17 @@ void Game::handleGemClick()
 			// If there was previously selected gem
 			if (gemLocked)
 			{
-				// If it is neighbour, switch them
+				// If it is neighbour, switch gems
 				if ((abs(selectedGemX - gemX) == 1 && abs(selectedGemY - gemY) == 0) || 
 					(abs(selectedGemY - gemY) == 1 && abs(selectedGemX - gemX) == 0))
 				{
 					Gem* switchingGem;
 
-					switchingGem = gridArray[gemX][gemY];
+					grid->TriggerGemMoving(selectedGemX, selectedGemY, gemX, gemY);
+
+					/*switchingGem = gridArray[gemX][gemY];
 					gridArray[gemX][gemY] = gridArray[selectedGemX][selectedGemY];
-					gridArray[selectedGemX][selectedGemY] = switchingGem;	
+					gridArray[selectedGemX][selectedGemY] = switchingGem;	*/
 					resetClickedGemCoordinates();
 				}
 				// If it is not neighbour, select the clicked gem

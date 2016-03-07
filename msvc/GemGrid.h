@@ -32,6 +32,16 @@ public:
 
 	void PrintGrid();
 
+	void MoveGem();
+	void TriggerGemMoving(int fromX, int fromY, int toX, int toY);
+
+	bool gemMoving = false;
+	
+	int fromX;
+	int fromY;
+	int toX;
+	int toY;
+
 	// Constants
 	const float gridXStart = 330.0f;
 	const float gridYStart = 100.0f;

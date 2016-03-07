@@ -116,3 +116,4 @@ bool Gem::GetToBeDestroyed()
 {
 	return toBeDestroyed;
 }
+

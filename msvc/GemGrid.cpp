@@ -86,7 +86,7 @@ bool GemGrid::IsCascadePresent()
 		// Find matching gems
 		findMatches();
 
-		if(!IsGravityActive())
+		if(!IsGravityActive() && gemsToDestroy.size() > 0)
 			ActivateGravity();
 	}
 
@@ -157,6 +157,9 @@ int GemGrid::GetColumnOffset(int column)
 /// <summary> Let the nature do it's job with the gems </summary>
 void GemGrid::ActivateGravity()
 {
+	// Disable user interaction while gravity is on 
+	LockGrid();
+
 	for (size_t iterator = 0; iterator < columnOffsets.size(); iterator++)
 	{
 		columnOffsets[iterator].first = 0;
@@ -179,12 +182,20 @@ void GemGrid::ActivateGravity()
 /// <summary> Pull the gems to bottom </summary>
 void GemGrid::GravityPull()
 {
+	bool isActive = false;
 	for (size_t indexer = 0; indexer < columnOffsets.size(); ++indexer)
 	{
 		if (GetColumnOffset(indexer) < 0)
 		{
+			isActive = true;
 			columnOffsets.at(indexer).second += gravity;
 		}
+	}
+
+	if (!isActive)
+	{
+		// Enable user interaction if gravity did it's job
+		UnlockGrid();
 	}
 }
 
@@ -407,4 +418,101 @@ bool GemGrid::alreadyMarkedForDestruction(int column, int row)
 		}
 	}
 	return alreadyExists;
+}
+
+
+
+void GemGrid::TriggerGemMoving(int passedFromX, int passedFromY, int passedToX, int passedToY)
+{
+	LockGrid();
+	gemMoving = true;
+	fromX = passedFromX;
+	fromY = passedFromY;
+	toX = passedToX;
+	toY = passedToY;
+}
+
+void GemGrid::MoveGem()
+{
+		// Go right
+		if (fromX < toX)
+		{
+		// Napisi posebne funckije za kretanje livo desto itd..	
+			gemGrid[fromX][fromY]->SetOffsetX(gemGrid[fromX][fromY]->GetOffsetX() + 3.0f);
+			gemGrid[toX][toY]->SetOffsetX(gemGrid[toX][toY]->GetOffsetX() - 3.0f);
+
+			// Came to the other side -> switch places
+			if (gemGrid[fromX][fromY]->GetOffsetX() >= gridOffset)
+			{
+				Gem* switchingGem;
+
+				switchingGem = gemGrid[toX][toY];
+				gemGrid[toX][toY] = gemGrid[fromX][fromY];
+				gemGrid[fromX][fromY] = switchingGem;
+				gemGrid[fromX][fromY]->ResetOffset();
+				gemGrid[toX][toY]->ResetOffset();
+				UnlockGrid();
+				gemMoving = false;
+			}
+		}
+		// Go left
+		else if (fromX > toX)
+		{
+			gemGrid[fromX][fromY]->SetOffsetX(gemGrid[fromX][fromY]->GetOffsetX() - 3.0f);
+			gemGrid[toX][toY]->SetOffsetX(gemGrid[toX][toY]->GetOffsetX() + 3.0f);
+
+			// Came to the other side -> switch places
+			if (gemGrid[fromX][fromY]->GetOffsetX() <= -gridOffset)
+			{
+				Gem* switchingGem;
+
+				switchingGem = gemGrid[toX][toY];
+				gemGrid[toX][toY] = gemGrid[fromX][fromY];
+				gemGrid[fromX][fromY] = switchingGem;
+				gemGrid[fromX][fromY]->ResetOffset();
+				gemGrid[toX][toY]->ResetOffset();
+				UnlockGrid();
+				gemMoving = false;
+			}
+		}
+		// Go down
+		else if (fromY < toY)
+		{
+			gemGrid[fromX][fromY]->SetOffsetY(gemGrid[fromX][fromY]->GetOffsetY() + 3.0f);
+			gemGrid[toX][toY]->SetOffsetY(gemGrid[toX][toY]->GetOffsetY() - 3.0f);
+
+			// Came to the other side -> switch places
+			if (gemGrid[fromX][fromY]->GetOffsetY() >= gridOffset)
+			{
+				Gem* switchingGem;
+
+				switchingGem = gemGrid[toX][toY];
+				gemGrid[toX][toY] = gemGrid[fromX][fromY];
+				gemGrid[fromX][fromY] = switchingGem;
+				gemGrid[fromX][fromY]->ResetOffset();
+				gemGrid[toX][toY]->ResetOffset();
+				UnlockGrid();
+				gemMoving = false;
+			}
+		}
+		// Go up
+		else if (fromY > toY)
+		{
+			gemGrid[fromX][fromY]->SetOffsetY(gemGrid[fromX][fromY]->GetOffsetY() - 3.0f);
+			gemGrid[toX][toY]->SetOffsetY(gemGrid[toX][toY]->GetOffsetY() + 3.0f);
+
+			// Came to the other side -> switch places
+			if (gemGrid[fromX][fromY]->GetOffsetY() <= -gridOffset)
+			{
+				Gem* switchingGem;
+
+				switchingGem = gemGrid[toX][toY];
+				gemGrid[toX][toY] = gemGrid[fromX][fromY];
+				gemGrid[fromX][fromY] = switchingGem;
+				gemGrid[fromX][fromY]->ResetOffset();
+				gemGrid[toX][toY]->ResetOffset();
+				UnlockGrid();
+				gemMoving = false;
+			}
+		}
 }

@@ -41,6 +41,7 @@ public:
 
 	void SetToBeDestroyed(bool passedDestroyed);
 	bool GetToBeDestroyed();
+	
 
 	void ResetOffset();
 
