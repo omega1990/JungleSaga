@@ -90,69 +90,6 @@ void Game::Update()
 	renderer->RenderTop();
 }
 
-void Game::handleGemClick()
-{
-	int gemX = static_cast<int>((mEngine.GetMouseX() - grid->gridXStart) / grid->gridOffset);
-	int gemY = static_cast<int>((mEngine.GetMouseY() - grid->gridYStart) / grid->gridOffset);
-
-	// If the click was on the same gem
-	if (gemX == selectedGemX && gemY == selectedGemY)
-	{
-		if (clickDown == false)
-		{
-			resetClickedGemCoordinates();
-		}
-	}
-
-	// If the click was on different gem
-	else if (gemX != selectedGemX || gemY != selectedGemY)
-	{
-		if (clickDown == false)
-		{
-			// If there was previously selected gem
-			if (gemLocked)
-			{
-				// If it is neighbour, switch gems
-				if ((abs(selectedGemX - gemX) == 1 && abs(selectedGemY - gemY) == 0) || 
-					(abs(selectedGemY - gemY) == 1 && abs(selectedGemX - gemX) == 0))
-				{
-					Gem* switchingGem;
-
-					grid->TriggerGemMoving(selectedGemX, selectedGemY, gemX, gemY);
-
-					/*switchingGem = gridArray[gemX][gemY];
-					gridArray[gemX][gemY] = gridArray[selectedGemX][selectedGemY];
-					gridArray[selectedGemX][selectedGemY] = switchingGem;	*/
-					resetClickedGemCoordinates();
-				}
-				// If it is not neighbour, select the clicked gem
-				else
-				{
-					selectedGemX = gemX;
-					selectedGemY = gemY;
-					gemLocked = true;
-				}
-
-				//resetClickedGemCoordinates();
-			}
-			else
-			{
-				selectedGemX = gemX;
-				selectedGemY = gemY;
-				gemLocked = true;
-			}
-		}
-		
-	}
-}
-
-void Game::resetClickedGemCoordinates()
-{
-	selectedGemX = -1;
-	selectedGemY = -1;
-	gemLocked = false;
-}
-
 
 bool Game::HandleGemInteraction()
 {
@@ -298,8 +235,68 @@ bool Game::HandleGemInteraction()
 	return false;
 }
 
+void Game::handleGemClick()
+{
+	int gemX = static_cast<int>((mEngine.GetMouseX() - grid->gridXStart) / grid->gridOffset);
+	int gemY = static_cast<int>((mEngine.GetMouseY() - grid->gridYStart) / grid->gridOffset);
 
+	// If the click was on the same gem
+	if (gemX == selectedGemX && gemY == selectedGemY)
+	{
+		if (clickDown == false)
+		{
+			resetClickedGemCoordinates();
+		}
+	}
 
+	// If the click was on different gem
+	else if (gemX != selectedGemX || gemY != selectedGemY)
+	{
+		if (clickDown == false)
+		{
+			// If there was previously selected gem
+			if (gemLocked)
+			{
+				// If it is neighbour, switch gems
+				if ((abs(selectedGemX - gemX) == 1 && abs(selectedGemY - gemY) == 0) ||
+					(abs(selectedGemY - gemY) == 1 && abs(selectedGemX - gemX) == 0))
+				{
+					Gem* switchingGem;
+
+					grid->TriggerGemMoving(selectedGemX, selectedGemY, gemX, gemY);
+
+					/*switchingGem = gridArray[gemX][gemY];
+					gridArray[gemX][gemY] = gridArray[selectedGemX][selectedGemY];
+					gridArray[selectedGemX][selectedGemY] = switchingGem;	*/
+					resetClickedGemCoordinates();
+				}
+				// If it is not neighbour, select the clicked gem
+				else
+				{
+					selectedGemX = gemX;
+					selectedGemY = gemY;
+					gemLocked = true;
+				}
+
+				//resetClickedGemCoordinates();
+			}
+			else
+			{
+				selectedGemX = gemX;
+				selectedGemY = gemY;
+				gemLocked = true;
+			}
+		}
+
+	}
+}
+
+void Game::resetClickedGemCoordinates()
+{
+	selectedGemX = -1;
+	selectedGemY = -1;
+	gemLocked = false;
+}
 
 Gem::direction Game::GetMouseDirection(float mouseStartPositionX, float mouseStartPositionY)
 {

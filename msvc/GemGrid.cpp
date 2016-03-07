@@ -420,8 +420,10 @@ bool GemGrid::alreadyMarkedForDestruction(int column, int row)
 	return alreadyExists;
 }
 
-
-
+/// <summary>
+/// Starts moving process by setting coorinates of gem which should be moved and gem
+/// toward which the gem is moved
+/// </summary>
 void GemGrid::TriggerGemMoving(int passedFromX, int passedFromY, int passedToX, int passedToY)
 {
 	LockGrid();
@@ -432,87 +434,76 @@ void GemGrid::TriggerGemMoving(int passedFromX, int passedFromY, int passedToX, 
 	toY = passedToY;
 }
 
+/// <summary>
+/// Performs the action of moving gems. When gems are moved to maximal distance, switch their place.
+/// </summary>
 void GemGrid::MoveGem()
 {
-		// Go right
-		if (fromX < toX)
-		{
+	// Go right
+	if (fromX < toX)
+	{
 		// Napisi posebne funckije za kretanje livo desto itd..	
-			gemGrid[fromX][fromY]->SetOffsetX(gemGrid[fromX][fromY]->GetOffsetX() + 3.0f);
-			gemGrid[toX][toY]->SetOffsetX(gemGrid[toX][toY]->GetOffsetX() - 3.0f);
+		gemGrid[fromX][fromY]->MoveRight();
+		gemGrid[toX][toY]->MoveLeft();
 
-			// Came to the other side -> switch places
-			if (gemGrid[fromX][fromY]->GetOffsetX() >= gridOffset)
-			{
-				Gem* switchingGem;
-
-				switchingGem = gemGrid[toX][toY];
-				gemGrid[toX][toY] = gemGrid[fromX][fromY];
-				gemGrid[fromX][fromY] = switchingGem;
-				gemGrid[fromX][fromY]->ResetOffset();
-				gemGrid[toX][toY]->ResetOffset();
-				UnlockGrid();
-				gemMoving = false;
-			}
-		}
-		// Go left
-		else if (fromX > toX)
+		// Came to the other side -> switch places
+		if (gemGrid[fromX][fromY]->GetOffsetX() >= gridOffset)
 		{
-			gemGrid[fromX][fromY]->SetOffsetX(gemGrid[fromX][fromY]->GetOffsetX() - 3.0f);
-			gemGrid[toX][toY]->SetOffsetX(gemGrid[toX][toY]->GetOffsetX() + 3.0f);
-
-			// Came to the other side -> switch places
-			if (gemGrid[fromX][fromY]->GetOffsetX() <= -gridOffset)
-			{
-				Gem* switchingGem;
-
-				switchingGem = gemGrid[toX][toY];
-				gemGrid[toX][toY] = gemGrid[fromX][fromY];
-				gemGrid[fromX][fromY] = switchingGem;
-				gemGrid[fromX][fromY]->ResetOffset();
-				gemGrid[toX][toY]->ResetOffset();
-				UnlockGrid();
-				gemMoving = false;
-			}
+			SwitchGems();
 		}
-		// Go down
-		else if (fromY < toY)
+	}
+	// Go left
+	else if (fromX > toX)
+	{
+		gemGrid[fromX][fromY]->MoveLeft();
+		gemGrid[toX][toY]->MoveRight();
+
+		// Came to the other side -> switch places
+		if (gemGrid[fromX][fromY]->GetOffsetX() <= -gridOffset)
 		{
-			gemGrid[fromX][fromY]->SetOffsetY(gemGrid[fromX][fromY]->GetOffsetY() + 3.0f);
-			gemGrid[toX][toY]->SetOffsetY(gemGrid[toX][toY]->GetOffsetY() - 3.0f);
-
-			// Came to the other side -> switch places
-			if (gemGrid[fromX][fromY]->GetOffsetY() >= gridOffset)
-			{
-				Gem* switchingGem;
-
-				switchingGem = gemGrid[toX][toY];
-				gemGrid[toX][toY] = gemGrid[fromX][fromY];
-				gemGrid[fromX][fromY] = switchingGem;
-				gemGrid[fromX][fromY]->ResetOffset();
-				gemGrid[toX][toY]->ResetOffset();
-				UnlockGrid();
-				gemMoving = false;
-			}
+			SwitchGems();
 		}
-		// Go up
-		else if (fromY > toY)
+	}
+	// Go down
+	else if (fromY < toY)
+	{
+		gemGrid[fromX][fromY]->MoveDown();
+		gemGrid[toX][toY]->MoveUp();
+
+		// Came to the other side -> switch places
+		if (gemGrid[fromX][fromY]->GetOffsetY() >= gridOffset)
 		{
-			gemGrid[fromX][fromY]->SetOffsetY(gemGrid[fromX][fromY]->GetOffsetY() - 3.0f);
-			gemGrid[toX][toY]->SetOffsetY(gemGrid[toX][toY]->GetOffsetY() + 3.0f);
-
-			// Came to the other side -> switch places
-			if (gemGrid[fromX][fromY]->GetOffsetY() <= -gridOffset)
-			{
-				Gem* switchingGem;
-
-				switchingGem = gemGrid[toX][toY];
-				gemGrid[toX][toY] = gemGrid[fromX][fromY];
-				gemGrid[fromX][fromY] = switchingGem;
-				gemGrid[fromX][fromY]->ResetOffset();
-				gemGrid[toX][toY]->ResetOffset();
-				UnlockGrid();
-				gemMoving = false;
-			}
+			SwitchGems();
 		}
+	}
+	// Go up
+	else if (fromY > toY)
+	{
+		gemGrid[fromX][fromY]->MoveUp();
+		gemGrid[toX][toY]->MoveDown();
+
+		// Came to the other side -> switch places
+		if (gemGrid[fromX][fromY]->GetOffsetY() <= -gridOffset)
+		{
+			SwitchGems();
+		}
+	}
+
+	
 }
+
+/// <summary> Switches places of two gems depending on their coordinates 
+///			  stored in gemGrid object 
+/// </summary>
+void GemGrid::SwitchGems()
+{
+	Gem* switchingGem;
+	switchingGem = gemGrid[toX][toY];
+	gemGrid[toX][toY] = gemGrid[fromX][fromY];
+	gemGrid[fromX][fromY] = switchingGem;
+	gemGrid[fromX][fromY]->ResetOffset();
+	gemGrid[toX][toY]->ResetOffset();
+	UnlockGrid();
+	gemMoving = false;
+}
+

@@ -26,8 +26,6 @@ public:
 	float mouseMoveStartX;
 	float mouseMoveStartY;
 	
-	direction moveDirection;
-
 	bool Selected;
 
 	void SetOffsetX(float passedOffsetX);
@@ -42,11 +40,17 @@ public:
 	void SetToBeDestroyed(bool passedDestroyed);
 	bool GetToBeDestroyed();
 	
+	void MoveRight();
+	void MoveLeft();
+	void MoveDown();
+	void MoveUp();
 
 	void ResetOffset();
 
 	void SetGravity(bool passedGravity) { gravity = passedGravity; };
 	bool GetGravity() { return gravity; };
+
+	const float gemMoveSpeed = 3.0f;
 
 private:
 	King::Engine::Texture gemColor;

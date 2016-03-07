@@ -32,20 +32,21 @@ public:
 
 	void PrintGrid();
 
-	void MoveGem();
 	void TriggerGemMoving(int fromX, int fromY, int toX, int toY);
+	void MoveGem();
+	void SwitchGems();
+
 
 	bool gemMoving = false;
 	
-	int fromX;
-	int fromY;
-	int toX;
-	int toY;
+
 
 	// Constants
 	const float gridXStart = 330.0f;
 	const float gridYStart = 100.0f;
 	const float gridOffset = 43.0f;
+
+	
 
 private:
 	gemGrid8x8 gemGrid;
@@ -55,6 +56,11 @@ private:
 
 	bool gridLocked;
 	int gravity;
+
+	int fromX;
+	int fromY;
+	int toX;
+	int toY;
 	
 	bool isInCascadeInitial(int x, int y, King::Engine::Texture color);
 	void markToDestroy();

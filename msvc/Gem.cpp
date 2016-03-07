@@ -4,7 +4,6 @@ Gem::Gem(King::Engine::Texture passedGemColor)
 	: gemColor(passedGemColor)
 	, offsetX(0.0f)
 	, offsetY(0.0f)
-	, moveDirection(Gem::STATIONARY)
 	, gravity(false)
 	, toBeDestroyed(false)
 	, Selected(false)
@@ -117,3 +116,22 @@ bool Gem::GetToBeDestroyed()
 	return toBeDestroyed;
 }
 
+void Gem::MoveRight()
+{
+	SetOffsetX(GetOffsetX() + gemMoveSpeed);
+}
+
+void Gem::MoveLeft()
+{
+	SetOffsetX(GetOffsetX() - gemMoveSpeed);
+}
+
+void Gem::MoveDown()
+{
+	SetOffsetY(GetOffsetY() + gemMoveSpeed);
+}
+
+void Gem::MoveUp()
+{
+	SetOffsetY(GetOffsetY() - gemMoveSpeed);
+}
