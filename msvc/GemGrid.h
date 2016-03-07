@@ -32,10 +32,10 @@ public:
 
 	void PrintGrid();
 
-	void TriggerGemMoving(int fromX, int fromY, int toX, int toY);
-	void MoveGem();
+	void TriggerGemMovingAnimation(int fromX, int fromY, int toX, int toY);
+	void AnimateGemSwitch();
 	void SwitchGems();
-
+	void SwitchGems(Gem &firstGem, Gem &secondGem);
 
 	bool gemMoving = false;
 	

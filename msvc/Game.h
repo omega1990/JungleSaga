@@ -44,11 +44,13 @@ private:
 	Gem::direction gemDirection;
 
 	Gem* clickedGem = nullptr;
-	Gem* swithingGem = nullptr;
+	Gem* switchingGem = nullptr;
+	Gem* previousSwitchingGem = nullptr;
 
 	Gem::direction GetMouseDirection(float mouseStartPositionX, float mouseStartPositionY);
 	bool Game::IsClickInsideGameArea();
-	std::pair<float, Gem::direction> GetGemOffset(int mouseX, int mouseY);
+	std::pair<float, Gem::direction> GetGemOffset(Gem &gem);
 	void Game::handleGemClick();
+	void Game::handleGemSwipe();
 	void Game::resetClickedGemCoordinates();
 };

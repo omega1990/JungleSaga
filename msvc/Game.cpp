@@ -27,9 +27,9 @@ void Game::Update()
 {
 	if (grid->gemMoving)
 	{
-		grid->MoveGem();
+		grid->AnimateGemSwitch();
 	}
-	
+
 	renderer->RenderBackground();
 
 	//mRotation += mEngine.GetLastFrameSeconds();
@@ -90,7 +90,6 @@ void Game::Update()
 	renderer->RenderTop();
 }
 
-
 bool Game::HandleGemInteraction()
 {
 	// If mouse is down
@@ -100,7 +99,6 @@ bool Game::HandleGemInteraction()
 		if (IsClickInsideGameArea())
 		{
 			handleGemClick();
-			// TODO: implement swipe
 		}
 		// If click was outside of the grid
 		else
@@ -114,11 +112,19 @@ bool Game::HandleGemInteraction()
 	else
 	{
 		clickDown = false;
+		// If mouse click is up, swipe is over
+		swipePerformed = false;
+
+		// Now, perform switching if gem offset after swipe is big enough
+		if (clickedGem != nullptr && switchingGem != nullptr)
+		{
+			grid->TriggerGemMovingAnimation(selectedGemX, selectedGemY, switchGemX, switchGemY);
+			resetClickedGemCoordinates();
+		}
 	}
 
-	if (gemLocked) renderer->RenderSelected(selectedGemX, selectedGemY);
-
-
+	if (gemLocked && !swipePerformed) renderer->RenderSelected(selectedGemX, selectedGemY);
+	
 	//if (mEngine.GetMouseButtonDown())
 	//{
 	//	// If the click was inside the grid
@@ -129,9 +135,7 @@ bool Game::HandleGemInteraction()
 	//			selectedGemX = static_cast<int>((mEngine.GetMouseX() - grid->gridXStart) / grid->gridOffset);
 	//			selectedGemY = static_cast<int>((mEngine.GetMouseY() - grid->gridYStart) / grid->gridOffset);
 	//		}
-
 	//		clickedGem = gridArray[selectedGemX][selectedGemY];
-
 	//		if (!clickedGem->Selected)
 	//		{
 	//			clickedGem->Selected = true;
@@ -147,19 +151,15 @@ bool Game::HandleGemInteraction()
 	//			swipePerformed = true;
 	//			gemDirection = GetMouseDirection(clickedGem->mouseMoveStartX, clickedGem->mouseMoveStartY);
 	//			std::pair<float, Gem::direction> offsetDirection = GetGemOffset(clickedGem->mouseMoveStartX, clickedGem->mouseMoveStartY);
-
 	//			if (swithingGem != nullptr)
 	//			{
 	//				swithingGem->ResetOffset();
 	//			}
-
 	//			if (clickedGem->mouseMoveStartX == mEngine.GetMouseX() && clickedGem->mouseMoveStartY == mEngine.GetMouseY())
 	//			{
 	//				swipePerformed = false;
 	//				mEngine.Render(King::Engine::TEXTURE_SELECTED, grid->gridXStart + selectedGemX*grid->gridOffset - 4.0f, grid->gridYStart + selectedGemY*grid->gridOffset - 4.0f);
 	//			}
-
-
 	//			//Setiraj offset gema
 	//			switch (offsetDirection.second)
 	//			{
@@ -201,7 +201,6 @@ bool Game::HandleGemInteraction()
 	//		mEngine.Render(King::Engine::TEXTURE_SELECTED, grid->gridXStart + selectedGemX*grid->gridOffset - 4.0f, grid->gridYStart + selectedGemY*grid->gridOffset - 4.0f);
 	//		clickReleased = true;
 	//	}
-
 	//	else if (clickedGem != nullptr && swithingGem != nullptr)
 	//	{
 	//		//clickedGem->SetGemColor(static_cast<King::Engine::Texture>(clickedGem->GetGemColor() - 1));
@@ -216,7 +215,6 @@ bool Game::HandleGemInteraction()
 	//		}
 	//		clickedGem->ResetOffset();
 	//		swithingGem->ResetOffset();
-
 	//		if (performSwitch)
 	//		{
 	//			Gem* temp = new Gem(static_cast<King::Engine::Texture>(1));
@@ -243,8 +241,17 @@ void Game::handleGemClick()
 	// If the click was on the same gem
 	if (gemX == selectedGemX && gemY == selectedGemY)
 	{
-		if (clickDown == false)
+		// Do not perform swipe until user tries to swap for more than 1.0f of distance
+		if (swipePerformed ||
+			GetGemOffset(*gridArray[selectedGemX][selectedGemY]).first > 1.0f ||
+			GetGemOffset(*gridArray[selectedGemX][selectedGemY]).first < -1.0f)
 		{
+			handleGemSwipe();
+		}
+		// Element was deselected
+		else if (clickDown == false)
+		{
+			std::cout << "Click" << std::endl;
 			resetClickedGemCoordinates();
 		}
 	}
@@ -254,48 +261,95 @@ void Game::handleGemClick()
 	{
 		if (clickDown == false)
 		{
-			// If there was previously selected gem
-			if (gemLocked)
+			// If it is neighbour, switch gems
+			if (((abs(selectedGemX - gemX) == 1 && abs(selectedGemY - gemY) == 0) ||
+				(abs(selectedGemY - gemY) == 1 && abs(selectedGemX - gemX) == 0)) &&
+				gemLocked)
 			{
-				// If it is neighbour, switch gems
-				if ((abs(selectedGemX - gemX) == 1 && abs(selectedGemY - gemY) == 0) ||
-					(abs(selectedGemY - gemY) == 1 && abs(selectedGemX - gemX) == 0))
-				{
-					Gem* switchingGem;
+				Gem* switchingGem;
 
-					grid->TriggerGemMoving(selectedGemX, selectedGemY, gemX, gemY);
-
-					/*switchingGem = gridArray[gemX][gemY];
-					gridArray[gemX][gemY] = gridArray[selectedGemX][selectedGemY];
-					gridArray[selectedGemX][selectedGemY] = switchingGem;	*/
-					resetClickedGemCoordinates();
-				}
-				// If it is not neighbour, select the clicked gem
-				else
-				{
-					selectedGemX = gemX;
-					selectedGemY = gemY;
-					gemLocked = true;
-				}
-
-				//resetClickedGemCoordinates();
+				grid->TriggerGemMovingAnimation(selectedGemX, selectedGemY, gemX, gemY);
+				resetClickedGemCoordinates();
 			}
+			// If it is not neighbour, select the clicked gem
 			else
 			{
 				selectedGemX = gemX;
 				selectedGemY = gemY;
 				gemLocked = true;
+				gridArray[selectedGemX][selectedGemY]->mouseMoveStartX = mEngine.GetMouseX();
+				gridArray[selectedGemX][selectedGemY]->mouseMoveStartY = mEngine.GetMouseY();
 			}
 		}
+		else
+		{
+			handleGemSwipe();
+		}
+	}
+}
 
+void Game::handleGemSwipe()
+{
+	if (gemLocked)
+	{
+		swipePerformed = true;
+		clickedGem = gridArray[selectedGemX][selectedGemY];
+
+		gemDirection = GetMouseDirection(clickedGem->mouseMoveStartX, clickedGem->mouseMoveStartY);
+		std::pair<float, Gem::direction> offsetDirection = GetGemOffset(*clickedGem);
+
+		switch (offsetDirection.second)
+		{
+		case Gem::HORIZONTAL_LEFT:
+			switchGemX = selectedGemX - 1;
+			switchGemY = selectedGemY;
+			switchingGem = gridArray[selectedGemX - 1][selectedGemY];
+			clickedGem->SetOffset(offsetDirection.first, 0);
+			switchingGem->SetOffset(-offsetDirection.first, 0);
+			break;
+		case Gem::HORIZONTAL_RIGHT:
+			switchGemX = selectedGemX + 1;
+			switchGemY = selectedGemY;
+			switchingGem = gridArray[selectedGemX + 1][selectedGemY];
+			clickedGem->SetOffset(-offsetDirection.first, 0);
+			switchingGem->SetOffset(offsetDirection.first, 0);
+			break;
+		case Gem::VERTICAL_UP:
+			switchGemX = selectedGemX;
+			switchGemY = selectedGemY - 1;
+			switchingGem = gridArray[selectedGemX][selectedGemY - 1];
+			clickedGem->SetOffset(0, offsetDirection.first);
+			switchingGem->SetOffset(0, -offsetDirection.first);
+			break;
+		case Gem::VERTICAL_DOWN:
+			switchGemX = selectedGemX;
+			switchGemY = selectedGemY + 1;
+			switchingGem = gridArray[selectedGemX][selectedGemY + 1];
+			clickedGem->SetOffset(0, -offsetDirection.first);
+			switchingGem->SetOffset(0, offsetDirection.first);
+			break;
+		default:
+			clickedGem->ResetOffset();
+		}
+
+		if (switchingGem != previousSwitchingGem
+			&& previousSwitchingGem != nullptr)
+		{
+			previousSwitchingGem->ResetOffset();
+		}
+		previousSwitchingGem = switchingGem;
 	}
 }
 
 void Game::resetClickedGemCoordinates()
 {
+	switchGemX = -1;
+	switchGemY = -1;
 	selectedGemX = -1;
 	selectedGemY = -1;
 	gemLocked = false;
+	clickedGem = nullptr;
+	switchingGem = nullptr;
 }
 
 Gem::direction Game::GetMouseDirection(float mouseStartPositionX, float mouseStartPositionY)
@@ -337,9 +391,11 @@ bool Game::IsClickInsideGameArea()
 	return false;
 }
 
-
-std::pair<float, Gem::direction> Game::GetGemOffset(int mouseStartX, int mouseStartY)
+std::pair<float, Gem::direction> Game::GetGemOffset(Gem &gem)
 {
+	int mouseStartX = gem.mouseMoveStartX;
+	int mouseStartY = gem.mouseMoveStartY;
+
 	switch (gemDirection)
 	{
 	case Gem::HORIZONTAL_LEFT:

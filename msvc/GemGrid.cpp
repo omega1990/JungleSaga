@@ -424,7 +424,7 @@ bool GemGrid::alreadyMarkedForDestruction(int column, int row)
 /// Starts moving process by setting coorinates of gem which should be moved and gem
 /// toward which the gem is moved
 /// </summary>
-void GemGrid::TriggerGemMoving(int passedFromX, int passedFromY, int passedToX, int passedToY)
+void GemGrid::TriggerGemMovingAnimation(int passedFromX, int passedFromY, int passedToX, int passedToY)
 {
 	LockGrid();
 	gemMoving = true;
@@ -437,7 +437,7 @@ void GemGrid::TriggerGemMoving(int passedFromX, int passedFromY, int passedToX, 
 /// <summary>
 /// Performs the action of moving gems. When gems are moved to maximal distance, switch their place.
 /// </summary>
-void GemGrid::MoveGem()
+void GemGrid::AnimateGemSwitch()
 {
 	// Go right
 	if (fromX < toX)
@@ -506,4 +506,5 @@ void GemGrid::SwitchGems()
 	UnlockGrid();
 	gemMoving = false;
 }
+
 
