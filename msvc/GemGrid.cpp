@@ -7,13 +7,13 @@
 
 GemGrid::GemGrid()
 {
-	InitializeGrid();
-	gravity = 3;
+	gravity = 5;
 
 	for (int i = 0; i < GRID_WIDTH; ++i)
 	{
 		columnOffsets.push_back(std::make_pair(-1, 0));
 	}
+	InitializeGrid();
 }
 
 GemGrid::~GemGrid()
@@ -28,13 +28,15 @@ GemGrid::~GemGrid()
 	}
 }
 
-
 /// <summary> Initializes gem grid
 /// </summary>
 void GemGrid::InitializeGrid()
 {
+	LockGrid();
 	for (int i = 0; i < 8; ++i)
 	{
+		columnOffsets.at(i).first = GRID_HEIGHT - 1;
+		columnOffsets.at(i).second -= (GRID_HEIGHT * gridOffset + (GRID_HEIGHT - i) * gridOffset);
 		for (int j = 0; j < 8; ++j)
 		{
 			// Fill in by random values between 1 and 5 -> textures for gems
@@ -48,7 +50,7 @@ void GemGrid::InitializeGrid()
 					gemGrid[i][j] = new Gem(static_cast<King::Engine::Texture>(texture));
 					break;
 				}
-			}	
+			}
 		}
 	}
 }
@@ -84,9 +86,9 @@ bool GemGrid::IsCascadePresent()
 	if (!destructmentInProgress())
 	{
 		// Find matching gems
-		findMatches();
+		findMatches(false);
 
-		if(!IsGravityActive() && gemsToDestroy.size() > 0)
+		if (!IsGravityActive() && gemsToDestroy.size() > 0)
 			ActivateGravity();
 	}
 
@@ -132,6 +134,8 @@ int GemGrid::DestroyGems()
 	}
 	int score = gemsToDestroy.size();
 	gemsToDestroy.clear();
+
+	checkPossibleMoves = true;
 
 	return score;
 }
@@ -290,14 +294,22 @@ bool GemGrid::destructmentInProgress()
 }
 
 /// <summary> Finds current matches </summary>
-void GemGrid::findMatches()
+bool GemGrid::findMatches(bool check)
 {
-	findMatchesHorizontal();
-	findMatchesVertical();
+	if (check)
+	{
+		if (findMatchesHorizontal(check)) return true;
+		if (findMatchesVertical(check)) return true;
+	}
+	else
+	{
+		findMatchesHorizontal(false);
+		findMatchesVertical(false);
+	}
 }
 
 /// <summary> Finds current matches horizontally</summary>
-void GemGrid::findMatchesHorizontal()
+bool GemGrid::findMatchesHorizontal(bool check)
 {
 	// Go through the grid row by row in search for matches
 	for (int row = 0; row < GRID_HEIGHT; ++row)
@@ -316,6 +328,11 @@ void GemGrid::findMatchesHorizontal()
 				{
 					if (matchingGemsCount >= 3)
 					{
+						if (check)
+						{
+							gemsToDestroy.clear();
+							return true;
+						}
 						for (int columnOffset = 0; columnOffset < matchingGemsCount; columnOffset++)
 						{
 							// Do not add the gem if it is already added to destruction list
@@ -335,6 +352,11 @@ void GemGrid::findMatchesHorizontal()
 			{
 				if (matchingGemsCount >= 3)
 				{
+					if (check)
+					{
+						gemsToDestroy.clear();
+						return true;
+					}
 					for (int columnOffset = 1; columnOffset <= matchingGemsCount; columnOffset++)
 					{
 						// Do not add the gem if it is already added to destruction list
@@ -349,10 +371,11 @@ void GemGrid::findMatchesHorizontal()
 			}
 		}
 	}
+	return false;
 }
 
 /// <summary> Finds current matches vertically</summary>
-void GemGrid::findMatchesVertical()
+bool GemGrid::findMatchesVertical(bool check)
 {
 	// Go through the grid column by column in search for matches
 	for (int column = 0; column < GRID_HEIGHT; ++column)
@@ -370,6 +393,11 @@ void GemGrid::findMatchesVertical()
 				{
 					if (matchingGemsCount >= 3)
 					{
+						if (check)
+						{
+							gemsToDestroy.clear();
+							return true;
+						}
 						for (int rowOffset = 0; rowOffset < matchingGemsCount; rowOffset++)
 						{
 							// Do not add the gem if it is already added to destruction list
@@ -389,6 +417,11 @@ void GemGrid::findMatchesVertical()
 			{
 				if (matchingGemsCount >= 3)
 				{
+					if (check)
+					{
+						gemsToDestroy.clear();
+						return true;
+					}
 					for (int rowOffset = 1; rowOffset <= matchingGemsCount; rowOffset++)
 					{
 						// Do not add the gem if it is already added to destruction list
@@ -403,7 +436,66 @@ void GemGrid::findMatchesVertical()
 			}
 		}
 	}
+	return false;
 }
+
+void GemGrid::switchAndCheckMatches(int x1, int y1, int x2, int y2)
+{
+	// Swap gem and see if this results in a match
+	Gem* tempGem;
+	tempGem = gemGrid[x1][y1];
+	gemGrid[x1][y1] = gemGrid[x2][y2];
+	gemGrid[x2][y2] = tempGem;
+
+	// If it is a match, put it in the possible moves vector
+	if (findMatches(true))
+	{
+		possibleMoves.push_back(std::make_pair(std::make_pair(x1, y1), std::make_pair(x2, y2)));
+	}
+
+	tempGem = gemGrid[x2][y2];
+	gemGrid[x2][y2] = gemGrid[x1][y1];
+	gemGrid[x1][y1] = tempGem;
+}
+
+possibleMoves GemGrid::FindPossibleMoves()
+{
+	possibleMoves.clear();
+
+	// o o o o o o o 
+	// ^
+	for (int row = 0; row < GRID_HEIGHT; ++row)
+	{
+		for (int column = 0; column < GRID_WIDTH; ++column)
+		{
+			if (row > 0)
+			{
+				switchAndCheckMatches(row, column, row - 1, column);
+			}
+
+			if (row < GRID_HEIGHT - 1)
+			{
+				switchAndCheckMatches(row, column, row + 1, column);
+			}
+
+			if (column > 0)
+			{
+				switchAndCheckMatches(row, column, row, column - 1);
+			}
+
+			if (column < GRID_WIDTH - 1)
+			{
+				switchAndCheckMatches(row, column, row, column + 1);
+			}
+		}
+	}
+
+	// Whem this is performed once, do not execute this until there are some gems destroyed
+	checkPossibleMoves = false;
+
+	return possibleMoves;
+}
+
 
 /// <summary> Checks if gem on position x,y is already selected for destruction </summary>
 /// <returns> Boolean - is gem already marked for destruction </returns>
@@ -424,14 +516,15 @@ bool GemGrid::alreadyMarkedForDestruction(int column, int row)
 /// Starts moving process by setting coorinates of gem which should be moved and gem
 /// toward which the gem is moved
 /// </summary>
-void GemGrid::TriggerGemMovingAnimation(int passedFromX, int passedFromY, int passedToX, int passedToY)
+void GemGrid::SwitchGems(int passedFromX, int passedFromY, int passedToX, int passedToY)
 {
-	LockGrid();
 	gemMoving = true;
+	LockGrid();
 	fromX = passedFromX;
 	fromY = passedFromY;
 	toX = passedToX;
 	toY = passedToY;
+	AnimateGemSwitch();
 }
 
 /// <summary>
@@ -439,19 +532,41 @@ void GemGrid::TriggerGemMovingAnimation(int passedFromX, int passedFromY, int pa
 /// </summary>
 void GemGrid::AnimateGemSwitch()
 {
+	bool movePossible = false;
+	for (auto possibleMove : possibleMoves)
+	{
+		if (possibleMove.first.first == fromX && possibleMove.first.second == fromY
+			&& possibleMove.second.first == toX && possibleMove.second.second == toY)
+		{
+			movePossible = true;
+		}
+	}
+
 	// Go right
 	if (fromX < toX)
 	{
-		// Napisi posebne funckije za kretanje livo desto itd..	
 		gemGrid[fromX][fromY]->MoveRight();
 		gemGrid[toX][toY]->MoveLeft();
 
 		// Came to the other side -> switch places
 		if (gemGrid[fromX][fromY]->GetOffsetX() >= gridOffset)
 		{
-			SwitchGems();
+			SwitchGemsPositions();
+			if (!movePossible && !switchBack)
+			{
+				switchBack = true;
+				// If we call the function with switchBack set to true, gems will not be switched again here
+				SwitchGems(toX, toY, fromX, fromY);
+			}
+			else
+			{
+				switchBack = false;
+				gemMoving = false;
+				UnlockGrid();
+			}
 		}
 	}
+
 	// Go left
 	else if (fromX > toX)
 	{
@@ -461,10 +576,24 @@ void GemGrid::AnimateGemSwitch()
 		// Came to the other side -> switch places
 		if (gemGrid[fromX][fromY]->GetOffsetX() <= -gridOffset)
 		{
-			SwitchGems();
+			SwitchGemsPositions();
+			if (!movePossible && !switchBack)
+			{
+				switchBack = true;
+				// If we call the function with switchBack set to true, gems will not be switched again here
+				SwitchGems(toX, toY, fromX, fromY);
+			}
+			else
+			{
+				switchBack = false;
+				gemMoving = false;
+				UnlockGrid();
+			}
 		}
 	}
-	// Go down
+
+
+	// Go doWN
 	else if (fromY < toY)
 	{
 		gemGrid[fromX][fromY]->MoveDown();
@@ -473,9 +602,23 @@ void GemGrid::AnimateGemSwitch()
 		// Came to the other side -> switch places
 		if (gemGrid[fromX][fromY]->GetOffsetY() >= gridOffset)
 		{
-			SwitchGems();
+			SwitchGemsPositions();
+			if (!movePossible && !switchBack)
+			{
+				switchBack = true;
+				// If we call the function with switchBack set to true, gems will not be switched again here
+				SwitchGems(toX, toY, fromX, fromY);
+			}
+			else
+			{
+				switchBack = false;
+				gemMoving = false;
+				UnlockGrid();
+			}
 		}
 	}
+
+
 	// Go up
 	else if (fromY > toY)
 	{
@@ -485,17 +628,27 @@ void GemGrid::AnimateGemSwitch()
 		// Came to the other side -> switch places
 		if (gemGrid[fromX][fromY]->GetOffsetY() <= -gridOffset)
 		{
-			SwitchGems();
+			SwitchGemsPositions();
+			if (!movePossible && !switchBack)
+			{
+				switchBack = true;
+				// If we call the function with switchBack set to true, gems will not be switched again here
+				SwitchGems(toX, toY, fromX, fromY);
+			}
+			else
+			{
+				switchBack = false;
+				gemMoving = false;
+				UnlockGrid();
+			}
 		}
 	}
-
-	
 }
 
 /// <summary> Switches places of two gems depending on their coordinates 
 ///			  stored in gemGrid object 
 /// </summary>
-void GemGrid::SwitchGems()
+void GemGrid::SwitchGemsPositions()
 {
 	Gem* switchingGem;
 	switchingGem = gemGrid[toX][toY];

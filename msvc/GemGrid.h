@@ -32,13 +32,14 @@ public:
 
 	void PrintGrid();
 
-	void TriggerGemMovingAnimation(int fromX, int fromY, int toX, int toY);
+	void SwitchGems(int fromX, int fromY, int toX, int toY);
 	void AnimateGemSwitch();
-	void SwitchGems();
-	void SwitchGems(Gem &firstGem, Gem &secondGem);
+	void SwitchGemsPositions();
+
+	possibleMoves FindPossibleMoves();
 
 	bool gemMoving = false;
-	
+	bool checkPossibleMoves = true;
 
 
 	// Constants
@@ -46,16 +47,21 @@ public:
 	const float gridYStart = 100.0f;
 	const float gridOffset = 43.0f;
 
-	
-
 private:
 	gemGrid8x8 gemGrid;
 	std::vector<std::pair<int, int>> gemsToDestroy;
+
+	// first: from j | second: offset 
 	std::vector<std::pair<int, int>> columnOffsets;	
 	King::Engine* engine;
+	possibleMoves possibleMoves;
 
 	bool gridLocked;
 	int gravity;
+
+
+	//stavi getter i setter
+	bool switchBack = false;
 
 	int fromX;
 	int fromY;
@@ -65,9 +71,11 @@ private:
 	bool isInCascadeInitial(int x, int y, King::Engine::Texture color);
 	void markToDestroy();
 	bool destructmentInProgress();
-	void findMatches();
-	void findMatchesHorizontal();
-	void findMatchesVertical();
+	bool findMatches(bool check);
+	bool findMatchesHorizontal(bool check);
+	bool findMatchesVertical(bool check);
 	bool alreadyMarkedForDestruction(int column, int row);
+	void switchAndCheckMatches(int x1, int y1, int x2, int y2);
+
 };
 

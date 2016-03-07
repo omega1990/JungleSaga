@@ -42,6 +42,16 @@ void Game::Update()
 	{
 		HandleGemInteraction();
 
+		if (grid->checkPossibleMoves)
+		{
+			possibleMoves moves = grid->FindPossibleMoves();
+
+			for (auto move : moves)
+			{
+				std::cout << move.first.first << " " << move.first.second << "|" << move.second.first << " " << move.second.second << std::endl;
+			}
+		}
+
 		if (grid->IsCascadePresent())
 		{
 			renderer->RenderToBeDestroyed(grid->GetGemsToDestroy());
@@ -54,6 +64,7 @@ void Game::Update()
 		//}
 		}
 	}
+
 	else
 	{
 		grid->GravityPull();
@@ -96,15 +107,15 @@ bool Game::HandleGemInteraction()
 	if (mEngine.GetMouseButtonDown())
 	{
 		// If click was inside the gem grid
-		if (IsClickInsideGameArea())
+		if (isClickInsideGameArea())
 		{
 			handleGemClick();
 		}
 		// If click was outside of the grid
-		else
-		{
-			resetClickedGemCoordinates();
-		}
+		//else
+		//{
+		//	resetClickedGemCoordinates();
+		//}
 		clickDown = true;
 	}
 
@@ -118,117 +129,24 @@ bool Game::HandleGemInteraction()
 		// Now, perform switching if gem offset after swipe is big enough
 		if (clickedGem != nullptr && switchingGem != nullptr)
 		{
-			grid->TriggerGemMovingAnimation(selectedGemX, selectedGemY, switchGemX, switchGemY);
-			resetClickedGemCoordinates();
+			if (abs(clickedGem->GetOffsetX()) > 20.f ||
+				abs(clickedGem->GetOffsetY()) > 20.f)
+			{
+				
+				grid->SwitchGems(selectedGemX, selectedGemY, switchGemX, switchGemY);
+				resetClickedGemCoordinates();
+			}
+			else
+			{
+				// If no switch is performed, return the gems to their original positions
+				gridArray[selectedGemX][selectedGemY]->SetOffset(0, 0);
+				gridArray[switchGemX][switchGemY]->SetOffset(0, 0);
+			}
 		}
 	}
 
+	// If gem is locked, and swipe is not active, render the selection box
 	if (gemLocked && !swipePerformed) renderer->RenderSelected(selectedGemX, selectedGemY);
-	
-	//if (mEngine.GetMouseButtonDown())
-	//{
-	//	// If the click was inside the grid
-	//	if (IsClickInsideGameArea())
-	//	{
-	//		if (!gemLocked)
-	//		{
-	//			selectedGemX = static_cast<int>((mEngine.GetMouseX() - grid->gridXStart) / grid->gridOffset);
-	//			selectedGemY = static_cast<int>((mEngine.GetMouseY() - grid->gridYStart) / grid->gridOffset);
-	//		}
-	//		clickedGem = gridArray[selectedGemX][selectedGemY];
-	//		if (!clickedGem->Selected)
-	//		{
-	//			clickedGem->Selected = true;
-	//			clickedGem->mouseMoveStartX = mEngine.GetMouseX();
-	//			clickedGem->mouseMoveStartY = mEngine.GetMouseY();
-	//			gemLocked = true;
-	//			firstGemLocked = true;
-	//			// Set highlight texture if the gem is locked
-	//			//clickedGem->SetGemColor(static_cast<King::Engine::Texture>(clickedGem->GetGemColor() + 1));
-	//		}
-	//		else
-	//		{
-	//			swipePerformed = true;
-	//			gemDirection = GetMouseDirection(clickedGem->mouseMoveStartX, clickedGem->mouseMoveStartY);
-	//			std::pair<float, Gem::direction> offsetDirection = GetGemOffset(clickedGem->mouseMoveStartX, clickedGem->mouseMoveStartY);
-	//			if (swithingGem != nullptr)
-	//			{
-	//				swithingGem->ResetOffset();
-	//			}
-	//			if (clickedGem->mouseMoveStartX == mEngine.GetMouseX() && clickedGem->mouseMoveStartY == mEngine.GetMouseY())
-	//			{
-	//				swipePerformed = false;
-	//				mEngine.Render(King::Engine::TEXTURE_SELECTED, grid->gridXStart + selectedGemX*grid->gridOffset - 4.0f, grid->gridYStart + selectedGemY*grid->gridOffset - 4.0f);
-	//			}
-	//			//Setiraj offset gema
-	//			switch (offsetDirection.second)
-	//			{
-	//			case Gem::HORIZONTAL_LEFT:
-	//				swithingGem = gridArray[selectedGemX - 1][selectedGemY];
-	//				clickedGem->SetOffset(offsetDirection.first, 0);
-	//				swithingGem->SetOffset(-offsetDirection.first, 0);
-	//				break;
-	//			case Gem::HORIZONTAL_RIGHT:
-	//				swithingGem = gridArray[selectedGemX + 1][selectedGemY];
-	//				clickedGem->SetOffset(-offsetDirection.first, 0);
-	//				swithingGem->SetOffset(offsetDirection.first, 0);
-	//				break;
-	//			case Gem::VERTICAL_UP:
-	//				swithingGem = gridArray[selectedGemX][selectedGemY - 1];
-	//				clickedGem->SetOffset(0, offsetDirection.first);
-	//				swithingGem->SetOffset(0, -offsetDirection.first);
-	//				break;
-	//			case Gem::VERTICAL_DOWN:
-	//				swithingGem = gridArray[selectedGemX][selectedGemY + 1];
-	//				clickedGem->SetOffset(0, -offsetDirection.first);
-	//				swithingGem->SetOffset(0, offsetDirection.first);
-	//				break;
-	//			default:
-	//				clickedGem->ResetOffset();
-	//			}
-	//		}
-	//	}
-	//	else
-	//	{
-	//		gemDirection = Gem::OUT_OF_BOUNDS;
-	//	}
-	//	clickReleased = false;
-	//}
-	//else
-	//{
-	//	if (!swipePerformed && firstGemLocked)
-	//	{
-	//		mEngine.Render(King::Engine::TEXTURE_SELECTED, grid->gridXStart + selectedGemX*grid->gridOffset - 4.0f, grid->gridYStart + selectedGemY*grid->gridOffset - 4.0f);
-	//		clickReleased = true;
-	//	}
-	//	else if (clickedGem != nullptr && swithingGem != nullptr)
-	//	{
-	//		//clickedGem->SetGemColor(static_cast<King::Engine::Texture>(clickedGem->GetGemColor() - 1));
-	//		clickedGem->Selected = false;
-	//		bool performSwitch = false;
-	//		if (clickedGem->GetOffsetX() > 10 ||
-	//			clickedGem->GetOffsetY() > 10 ||
-	//			clickedGem->GetOffsetX() < -10 ||
-	//			clickedGem->GetOffsetY() < -10)
-	//		{
-	//			performSwitch = true;
-	//		}
-	//		clickedGem->ResetOffset();
-	//		swithingGem->ResetOffset();
-	//		if (performSwitch)
-	//		{
-	//			Gem* temp = new Gem(static_cast<King::Engine::Texture>(1));
-	//			// Perform gem switching
-	//			*temp = *clickedGem;
-	//			*clickedGem = *swithingGem;
-	//			*swithingGem = *temp;
-	//			delete temp;
-	//		}
-	//		gemLocked = false;
-	//		clickedGem = nullptr;
-	//		swithingGem = nullptr;
-	//	}
-	//}
 
 	return false;
 }
@@ -243,8 +161,8 @@ void Game::handleGemClick()
 	{
 		// Do not perform swipe until user tries to swap for more than 1.0f of distance
 		if (swipePerformed ||
-			GetGemOffset(*gridArray[selectedGemX][selectedGemY]).first > 1.0f ||
-			GetGemOffset(*gridArray[selectedGemX][selectedGemY]).first < -1.0f)
+			getGemOffset(*gridArray[selectedGemX][selectedGemY]).first > 1.0f ||
+			getGemOffset(*gridArray[selectedGemX][selectedGemY]).first < -1.0f)
 		{
 			handleGemSwipe();
 		}
@@ -268,7 +186,7 @@ void Game::handleGemClick()
 			{
 				Gem* switchingGem;
 
-				grid->TriggerGemMovingAnimation(selectedGemX, selectedGemY, gemX, gemY);
+				grid->SwitchGems(selectedGemX, selectedGemY, gemX, gemY);
 				resetClickedGemCoordinates();
 			}
 			// If it is not neighbour, select the clicked gem
@@ -295,8 +213,8 @@ void Game::handleGemSwipe()
 		swipePerformed = true;
 		clickedGem = gridArray[selectedGemX][selectedGemY];
 
-		gemDirection = GetMouseDirection(clickedGem->mouseMoveStartX, clickedGem->mouseMoveStartY);
-		std::pair<float, Gem::direction> offsetDirection = GetGemOffset(*clickedGem);
+		gemDirection = getMouseDirection(clickedGem->mouseMoveStartX, clickedGem->mouseMoveStartY);
+		std::pair<float, Gem::direction> offsetDirection = getGemOffset(*clickedGem);
 
 		switch (offsetDirection.second)
 		{
@@ -347,12 +265,13 @@ void Game::resetClickedGemCoordinates()
 	switchGemY = -1;
 	selectedGemX = -1;
 	selectedGemY = -1;
+
 	gemLocked = false;
 	clickedGem = nullptr;
 	switchingGem = nullptr;
 }
 
-Gem::direction Game::GetMouseDirection(float mouseStartPositionX, float mouseStartPositionY)
+Gem::direction Game::getMouseDirection(float mouseStartPositionX, float mouseStartPositionY)
 {
 	// Ako ti je mis otisa horizontalno
 	if (abs(mEngine.GetMouseX() - mouseStartPositionX) >= abs(mEngine.GetMouseY() - mouseStartPositionY))
@@ -380,7 +299,7 @@ Gem::direction Game::GetMouseDirection(float mouseStartPositionX, float mouseSta
 	}
 }
 
-bool Game::IsClickInsideGameArea()
+bool Game::isClickInsideGameArea()
 {
 	if (mEngine.GetMouseX() > grid->gridXStart
 		&& mEngine.GetMouseX() < grid->gridXStart + (static_cast<float>(GRID_WIDTH) * grid->gridOffset)
@@ -391,7 +310,7 @@ bool Game::IsClickInsideGameArea()
 	return false;
 }
 
-std::pair<float, Gem::direction> Game::GetGemOffset(Gem &gem)
+std::pair<float, Gem::direction> Game::getGemOffset(Gem &gem)
 {
 	int mouseStartX = gem.mouseMoveStartX;
 	int mouseStartY = gem.mouseMoveStartY;

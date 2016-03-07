@@ -17,7 +17,6 @@ public:
 	void RenderSelected(int selectedGemX, int selectedGemY);
 
 
-
 private:
 	King::Engine* mEngine;
 	GemGrid* grid;
