@@ -72,6 +72,7 @@ namespace King {
 		std::string assets(assetsDirectory);
 
 		// ./assets/BackGround.jpg itd
+		std::string startScreen = assets; startScreen += "/StartScreen.png";
 		std::string background = assets; background += "/BackGround.jpg";
 		std::string blue = assets; blue += "/Blue.png";
 		std::string green = assets; green += "/Green.png";
@@ -86,6 +87,7 @@ namespace King {
 
 		// Surface container sadržava sve teksture (spriteove)
 		// Na kreiranje engine klase napravi reset svih tekstura, ako je ista valjda ne postavlja novi pokazivac?!
+		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_START].reset(new SdlSurface(startScreen.c_str()));
 		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_BACKGROUND].reset(new SdlSurface(background.c_str()));
 		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_BLUE].reset(new SdlSurface(blue.c_str()));
 		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_GREEN].reset(new SdlSurface(green.c_str()));

@@ -10,6 +10,12 @@ Renderer::~Renderer()
 {
 }
 
+void Renderer::RenderStartScreen(float x, float y)
+{
+	mEngine->Render(King::Engine::TEXTURE_START, x, y);
+}
+
+
 void Renderer::RenderBackground()
 {
 	mEngine->Render(King::Engine::TEXTURE_BACKGROUND, 0, 0);
@@ -24,8 +30,8 @@ void Renderer::RenderGemGrid()
 {
 	gemGrid8x8& gridArray = grid->GetGemGrid();
 	bool isSelected = false;
-	int x = -1;
-	int y = -1;
+	int x;
+	int y;
 
 	// Draw complete gem grid
 	for (int i = 0; i < GRID_WIDTH; ++i)
@@ -69,10 +75,18 @@ void Renderer::RenderGemGrid()
 
 void Renderer::RenderToBeDestroyed(std::vector<std::pair<int, int>> gemsToBeDestroyed)
 {
+	MatchRendererInProgress = true;
+
+	// If more than 0.15 seconds passed
+	if (clock > 0.02f)
+	{
+		clock = 0.0f;
+		MatchRendererInProgress = false;
+	}
+
+	clock += mEngine->GetLastFrameSeconds();
+
 	gemGrid8x8& gridArray = grid->GetGemGrid();
-	bool isSelected = false;
-	int x = -1;
-	int y = -1;
 
 	for (auto gemCoordinade : gemsToBeDestroyed)
 	{
@@ -80,10 +94,12 @@ void Renderer::RenderToBeDestroyed(std::vector<std::pair<int, int>> gemsToBeDest
 			, grid->gridXStart + gemCoordinade.first * grid->gridOffset + gridArray[gemCoordinade.first][gemCoordinade.second]->GetOffsetX()
 			, grid->gridYStart + gemCoordinade.second * grid->gridOffset + gridArray[gemCoordinade.first][gemCoordinade.second]->GetOffsetY());
 	}
+
+	
 }
 
 void Renderer::RenderSelected(int selectedGemX, int selectedGemY)
 {
-	if(selectedGemX != -1 && selectedGemY != -1)
+	if (selectedGemX != -1 && selectedGemY != -1)
 		mEngine->Render(King::Engine::TEXTURE_SELECTED, grid->gridXStart + selectedGemX*grid->gridOffset - 4.0f, grid->gridYStart + selectedGemY*grid->gridOffset - 4.0f);
 }

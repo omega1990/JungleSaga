@@ -15,6 +15,16 @@ public:
 	void Update();
 	
 	bool HandleGemInteraction();
+
+	enum GameMode
+	{
+		MENU, 
+		MENUSLIDE,
+		GAME
+	};
+
+	GameMode mode = MENU;
+
 private:
 	int score;
 
@@ -53,4 +63,11 @@ private:
 	void Game::handleGemClick();
 	void Game::handleGemSwipe();
 	void Game::resetClickedGemCoordinates();
+
+	const int gameDuration = 60;
+
+
+	float slidePositionX = 0.0f;
+	float slidePositionY = 0.0f;
+	float slideIncrementer = 0.0f;
 };

@@ -19,8 +19,8 @@ public:
 	bool IsCascadePresent();
 	int DestroyGems();
 	std::vector<std::pair<int, int>> GetGemsToDestroy();
-	std::vector<std::pair<int, int>> GetColumnOffsets();
-	int GetColumnOffset(int column);
+	std::vector<std::pair<int, float>> GetColumnOffsets();
+	float GetColumnOffset(int column);
 	
 	void ActivateGravity();
 	void GravityPull();
@@ -52,12 +52,16 @@ private:
 	std::vector<std::pair<int, int>> gemsToDestroy;
 
 	// first: from j | second: offset 
-	std::vector<std::pair<int, int>> columnOffsets;	
+	std::vector<std::pair<int, float>> columnOffsets;	
 	King::Engine* engine;
 	possibleMoves possibleMoves;
 
 	bool gridLocked;
-	int gravity;
+
+	float gravityIncrementer = 0.0f;
+	const float gravity = 1.0f;
+
+
 
 
 	//stavi getter i setter
@@ -70,7 +74,7 @@ private:
 	
 	bool isInCascadeInitial(int x, int y, King::Engine::Texture color);
 	void markToDestroy();
-	bool destructmentInProgress();
+	bool destructionPending();
 	bool findMatches(bool check);
 	bool findMatchesHorizontal(bool check);
 	bool findMatchesVertical(bool check);

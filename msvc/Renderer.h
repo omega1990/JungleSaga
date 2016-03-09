@@ -9,6 +9,7 @@ public:
 	Renderer(King::Engine& mEngine, GemGrid& passedGrid);
 	~Renderer();
 
+	void RenderStartScreen(float x = 0.0f, float y = 0.0f);
 	void RenderBackground();
 	void RenderGemGrid();
 	void RenderToBeDestroyed(std::vector<std::pair<int, int>> gemsToBeDestroyed);
@@ -16,9 +17,14 @@ public:
 
 	void RenderSelected(int selectedGemX, int selectedGemY);
 
+	bool MatchRendererInProgress = false;
 
 private:
 	King::Engine* mEngine;
 	GemGrid* grid;
+
+
+	float clock = 0.0f;
+	
 };
 

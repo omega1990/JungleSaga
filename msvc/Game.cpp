@@ -25,80 +25,107 @@ void Game::Start()
 
 void Game::Update()
 {
-	if (grid->gemMoving)
+	switch (mode)
 	{
-		grid->AnimateGemSwitch();
-	}
-
-	renderer->RenderBackground();
-
-	//mRotation += mEngine.GetLastFrameSeconds();
-
-	referenceClock += mEngine.GetLastFrameSeconds();
-
-	renderer->RenderGemGrid();
-
-	if (!grid->IsGridLocked())
-	{
-		HandleGemInteraction();
-
-		if (grid->checkPossibleMoves)
+		case MENU:
 		{
-			possibleMoves moves = grid->FindPossibleMoves();
+			renderer->RenderStartScreen();
 
-			for (auto move : moves)
+			mEngine.Write("Click to start", 300.0f, 330.0f);
+
+			if (mEngine.GetMouseButtonDown())
 			{
-				std::cout << move.first.first << " " << move.first.second << "|" << move.second.first << " " << move.second.second << std::endl;
+				mode = MENUSLIDE;
 			}
+			break;
 		}
-
-		if (grid->IsCascadePresent())
+		case MENUSLIDE:
 		{
-			renderer->RenderToBeDestroyed(grid->GetGemsToDestroy());
+			renderer->RenderBackground();
+			renderer->RenderStartScreen(slidePositionX, slidePositionY);
+			slidePositionY += slideIncrementer;
+			++slideIncrementer;
 
-			//referenceClock += mEngine.GetLastFrameSeconds();
-			//if ((referenceClock > 2.0f))
-			//{
-			score += grid->DestroyGems();
-			//referenceClock = 0.0f;
-		//}
+			if (slidePositionY > mEngine.GetHeight())
+			{
+				mode = GAME;
+				// Reset sliding parameters after sliding is over
+				slidePositionY = 0.0f;
+				slideIncrementer = 0.0f;
+			}
+
+			break;
+		}
+		case GAME:
+		{
+			// If gem was clicked to switch, perform the animation of switching
+			if (grid->gemMoving)
+			{
+				grid->AnimateGemSwitch();
+			}
+
+			renderer->RenderBackground();
+
+			referenceClock += mEngine.GetLastFrameSeconds();
+
+			renderer->RenderGemGrid();
+
+			// If grid is not locked, perform handling of user interaction 
+			if (!grid->IsGridLocked())
+			{
+				HandleGemInteraction();
+
+				if (grid->checkPossibleMoves)
+				{
+					possibleMoves moves = grid->FindPossibleMoves();
+					std::cout << "checking ... " << std::endl;
+						 
+					/*for (auto move : moves)
+					{
+						std::cout << move.first.first << " " << move.first.second << "|" << move.second.first << " " << move.second.second << std::endl;
+					}*/
+				}
+
+				if (grid->IsCascadePresent())
+				{
+					renderer->RenderToBeDestroyed(grid->GetGemsToDestroy());
+
+					if (!renderer->MatchRendererInProgress)
+					{
+						grid->ActivateGravity();
+						score += grid->DestroyGems();
+					}
+				}
+			}
+			// If grid is locked, perform gravity pull
+			else
+			{
+				grid->GravityPull();
+			}
+
+			// Draw score
+			mEngine.Write("Score", 50.0f, 25.0f);
+			std::string s = std::to_string(score);
+			char const *pchar = s.c_str();
+			mEngine.Write(pchar, 50.0f, 50.0f);
+
+			// Draw time
+			s = std::to_string(gameDuration - static_cast<int>(referenceClock));
+			pchar = s.c_str();
+			mEngine.Write(pchar, 100.0f, 450.0f);
+
+			if (static_cast<int>(referenceClock) == gameDuration)
+			{
+				mode = MENU;
+				referenceClock = 0.0f;
+				score = 0;
+			}
+
+			// Render the top of the grid so it is above gems falling from the top
+			renderer->RenderTop();
+			break;
 		}
 	}
-
-	else
-	{
-		grid->GravityPull();
-	}
-
-	std::string s = std::to_string(score);
-	char const *pchar = s.c_str();
-
-	mEngine.Write(pchar, 50.0f, 50.0f);
-
-	s = std::to_string(60 - static_cast<int>(referenceClock));
-	pchar = s.c_str();
-	mEngine.Write(pchar, 100.0f, 450.0f);
-
-	//mEngine.Render(King::Engine::TEXTURE_BLUE, 650.0f, 450.0f);
-
-	//mEngine.Write("Green", 650.0f, 140.0f);
-	//mEngine.Write("Red", 100.0f, 490.0f);
-	//mEngine.Write("Blue", 650.0f, 490.0f);
-
-	//const char text[] = "This rotates at 5/PI Hz";
-	//mRotation += mEngine.GetLastFrameSeconds();
-	//mEngine.Write(text, mEngine.GetWidth() / 2.0f, mEngine.GetHeight() / 2.0f, mRotation * 20.5f);
-
-	/*if (mEngine.GetMouseButtonDown()) {
-	mYellowDiamondX = mEngine.GetMouseX();
-	mYellowDiamondY = mEngine.GetMouseY();
-	}
-	mEngine.Render(King::Engine::TEXTURE_YELLOW, mYellowDiamondX, mYellowDiamondY);*/
-	//mEngine.Write("Click to", mYellowDiamondX, mYellowDiamondY + 40.0f);
-	//mEngine.Write("move me!", mYellowDiamondX, mYellowDiamondY + 70.0f);		
-
-	//mEngine.Write("Jelena", mEngine.GetWidth() / 2.0f, mEngine.GetHeight() / 2.0f, mRotation * 20.5f);
-	renderer->RenderTop();
 }
 
 bool Game::HandleGemInteraction()
@@ -129,8 +156,8 @@ bool Game::HandleGemInteraction()
 		// Now, perform switching if gem offset after swipe is big enough
 		if (clickedGem != nullptr && switchingGem != nullptr)
 		{
-			if (abs(clickedGem->GetOffsetX()) > 20.f ||
-				abs(clickedGem->GetOffsetY()) > 20.f)
+			if (abs(clickedGem->GetOffsetX()) > 15.f ||
+				abs(clickedGem->GetOffsetY()) > 15.f)
 			{
 				
 				grid->SwitchGems(selectedGemX, selectedGemY, switchGemX, switchGemY);
@@ -184,7 +211,6 @@ void Game::handleGemClick()
 				(abs(selectedGemY - gemY) == 1 && abs(selectedGemX - gemX) == 0)) &&
 				gemLocked)
 			{
-				Gem* switchingGem;
 
 				grid->SwitchGems(selectedGemX, selectedGemY, gemX, gemY);
 				resetClickedGemCoordinates();

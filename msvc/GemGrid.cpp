@@ -7,11 +7,10 @@
 
 GemGrid::GemGrid()
 {
-	gravity = 5;
 
 	for (int i = 0; i < GRID_WIDTH; ++i)
 	{
-		columnOffsets.push_back(std::make_pair(-1, 0));
+		columnOffsets.push_back(std::make_pair(-1, 0.0f));
 	}
 	InitializeGrid();
 }
@@ -33,10 +32,11 @@ GemGrid::~GemGrid()
 void GemGrid::InitializeGrid()
 {
 	LockGrid();
+	std::cout << "initialize lock" << std::endl;
 	for (int i = 0; i < 8; ++i)
 	{
 		columnOffsets.at(i).first = GRID_HEIGHT - 1;
-		columnOffsets.at(i).second -= (GRID_HEIGHT * gridOffset + (GRID_HEIGHT - i) * gridOffset);
+		columnOffsets.at(i).second -= static_cast<float>((GRID_HEIGHT * gridOffset + (GRID_HEIGHT - i) * gridOffset));
 		for (int j = 0; j < 8; ++j)
 		{
 			// Fill in by random values between 1 and 5 -> textures for gems
@@ -83,23 +83,20 @@ King::Engine::Texture GemGrid::GenerateRandomGemColor() const
 bool GemGrid::IsCascadePresent()
 {
 	// Check for mathes only if we are currenty not destroying gems
-	if (!destructmentInProgress())
+	if (!destructionPending())
 	{
 		// Find matching gems
 		findMatches(false);
-
-		if (!IsGravityActive() && gemsToDestroy.size() > 0)
-			ActivateGravity();
 	}
 
-	if (gemsToDestroy.size() > 0) return true;
-	else return false;
+	return destructionPending();
 }
 
 /// <summary> Destroys gems </summary>
 /// <returns> Number of gems destroyed </returns>
 int GemGrid::DestroyGems()
 {
+	std::cout << "DestroyGems" << std::endl;
 	markToDestroy();
 
 	for (int row = 0; row < GRID_WIDTH; ++row)
@@ -147,13 +144,13 @@ std::vector<std::pair<int, int>> GemGrid::GetGemsToDestroy()
 }
 
 /// <summary> Gets y offset of all the columns </summary>
-std::vector<std::pair<int, int>> GemGrid::GetColumnOffsets()
+std::vector<std::pair<int, float>> GemGrid::GetColumnOffsets()
 {
 	return columnOffsets;
 }
 
 /// <summary> Gets y offset of specific column </summary>
-int GemGrid::GetColumnOffset(int column)
+float GemGrid::GetColumnOffset(int column)
 {
 	return columnOffsets.at(column).second;
 }
@@ -161,13 +158,15 @@ int GemGrid::GetColumnOffset(int column)
 /// <summary> Let the nature do it's job with the gems </summary>
 void GemGrid::ActivateGravity()
 {
+	std::cout << "ActivateGravity" << std::endl;
 	// Disable user interaction while gravity is on 
 	LockGrid();
+	std::cout << "ActivateGravity lock" << std::endl;
 
 	for (size_t iterator = 0; iterator < columnOffsets.size(); iterator++)
 	{
 		columnOffsets[iterator].first = 0;
-		columnOffsets[iterator].second = 0;
+		columnOffsets[iterator].second = 0.0f;
 	}
 
 	std::sort(gemsToDestroy.begin(), gemsToDestroy.end(), [](auto &left, auto &right)
@@ -179,27 +178,34 @@ void GemGrid::ActivateGravity()
 	{
 		if (columnOffsets.at(gem.first).first < gem.second)
 			columnOffsets.at(gem.first).first = gem.second;
-		columnOffsets.at(gem.first).second -= static_cast<int>(gridOffset);
+		columnOffsets.at(gem.first).second -= gridOffset;
 	}
 }
 
 /// <summary> Pull the gems to bottom </summary>
 void GemGrid::GravityPull()
 {
-	bool isActive = false;
 	for (size_t indexer = 0; indexer < columnOffsets.size(); ++indexer)
 	{
-		if (GetColumnOffset(indexer) < 0)
+		if (GetColumnOffset(indexer) < 0.0f)
 		{
-			isActive = true;
-			columnOffsets.at(indexer).second += gravity;
+			columnOffsets.at(indexer).second += (gravity + gravityIncrementer);			
 		}
 	}
+	gravityIncrementer += 0.2f;
 
-	if (!isActive)
+	if (!IsGravityActive())
 	{
+		std::cout << "gravity not active. unlocking grid" << std::endl;
 		// Enable user interaction if gravity did it's job
+		gravityIncrementer = 0.0f;
 		UnlockGrid();
+	}
+	else
+	{
+		std::cout << "gravity active" << std::endl;
+
+
 	}
 }
 
@@ -208,11 +214,13 @@ bool GemGrid::IsGravityActive()
 {
 	for (auto offset : columnOffsets)
 	{
-		if (offset.second < 0)
+		if (offset.second < 0.0f)
 		{
+			std::cout << offset.second << std::endl;
 			return true;
 		}
 	}
+	std::cout << "gravity not active" << std::endl;
 	return false;
 }
 
@@ -225,12 +233,14 @@ bool GemGrid::IsGridLocked()
 /// <summary> Locks grid for interaction </summary>
 void GemGrid::LockGrid()
 {
+	std::cout << "LockGrid" << std::endl;
 	gridLocked = true;
 }
 
 /// <summary> Unlocks grid for interaction </summary>
 void GemGrid::UnlockGrid()
 {
+	std::cout << "UnlockGrid" << std::endl;
 	gridLocked = false;
 }
 
@@ -287,9 +297,9 @@ void GemGrid::markToDestroy()
 }
 
 /// <summary> Check if gems are currenty marked for destruction </summary>
-bool GemGrid::destructmentInProgress()
+bool GemGrid::destructionPending()
 {
-	if (gemsToDestroy.size() == 0) return false;
+	if (gemsToDestroy.empty()) return false;
 	else return true;
 }
 
@@ -439,6 +449,7 @@ bool GemGrid::findMatchesVertical(bool check)
 	return false;
 }
 
+// Used in find algorithm for temporary switching
 void GemGrid::switchAndCheckMatches(int x1, int y1, int x2, int y2)
 {
 	// Swap gem and see if this results in a match
@@ -519,6 +530,7 @@ bool GemGrid::alreadyMarkedForDestruction(int column, int row)
 void GemGrid::SwitchGems(int passedFromX, int passedFromY, int passedToX, int passedToY)
 {
 	gemMoving = true;
+	std::cout << "SwitchGems lock" << std::endl;
 	LockGrid();
 	fromX = passedFromX;
 	fromY = passedFromY;
@@ -532,6 +544,7 @@ void GemGrid::SwitchGems(int passedFromX, int passedFromY, int passedToX, int pa
 /// </summary>
 void GemGrid::AnimateGemSwitch()
 {
+	LockGrid();
 	bool movePossible = false;
 	for (auto possibleMove : possibleMoves)
 	{
@@ -552,10 +565,11 @@ void GemGrid::AnimateGemSwitch()
 		if (gemGrid[fromX][fromY]->GetOffsetX() >= gridOffset)
 		{
 			SwitchGemsPositions();
+			// If move is not valid, switch the gem back
 			if (!movePossible && !switchBack)
 			{
 				switchBack = true;
-				// If we call the function with switchBack set to true, gems will not be switched again here
+				// By setting switchBack to true, gems will not be switched again here
 				SwitchGems(toX, toY, fromX, fromY);
 			}
 			else
@@ -593,7 +607,7 @@ void GemGrid::AnimateGemSwitch()
 	}
 
 
-	// Go doWN
+	// Go down
 	else if (fromY < toY)
 	{
 		gemGrid[fromX][fromY]->MoveDown();
