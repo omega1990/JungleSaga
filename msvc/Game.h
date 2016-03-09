@@ -20,7 +20,9 @@ public:
 	{
 		MENU, 
 		MENUSLIDE,
-		GAME
+		GAME,
+		GAMEOVERSLIDE,
+		GAMEOVER
 	};
 
 	GameMode mode = MENU;
@@ -64,7 +66,7 @@ private:
 	void Game::handleGemSwipe();
 	void Game::resetClickedGemCoordinates();
 
-	const int gameDuration = 60;
+	const int gameDuration = 2;
 
 
 	float slidePositionX = 0.0f;

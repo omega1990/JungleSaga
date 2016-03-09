@@ -77,7 +77,7 @@ void Renderer::RenderToBeDestroyed(std::vector<std::pair<int, int>> gemsToBeDest
 {
 	MatchRendererInProgress = true;
 
-	// If more than 0.15 seconds passed
+	// If more than 0.02 seconds passed
 	if (clock > 0.02f)
 	{
 		clock = 0.0f;

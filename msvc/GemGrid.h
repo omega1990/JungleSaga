@@ -13,7 +13,7 @@ public:
 	GemGrid();
 	~GemGrid();
 
-	void InitializeGrid();
+	void InitializeGrid(bool reshuffle = false);
 	gemGrid8x8& GetGemGrid();
 	King::Engine::Texture GemGrid::GenerateRandomGemColor() const;	
 	bool IsCascadePresent();
@@ -21,6 +21,9 @@ public:
 	std::vector<std::pair<int, int>> GetGemsToDestroy();
 	std::vector<std::pair<int, float>> GetColumnOffsets();
 	float GetColumnOffset(int column);
+
+	void EmptyGrid();
+	void Reshuffle();
 	
 	void ActivateGravity();
 	void GravityPull();

@@ -17,27 +17,22 @@ GemGrid::GemGrid()
 
 GemGrid::~GemGrid()
 {
-	// Destroy dinamically allocated objects
-	for (int i = 0; i < 8; ++i)
-	{
-		for (int j = 0; j < 8; ++j)
-		{
-			delete gemGrid[i][j];
-		}
-	}
+	EmptyGrid();
 }
 
 /// <summary> Initializes gem grid
 /// </summary>
-void GemGrid::InitializeGrid()
+void GemGrid::InitializeGrid(bool reshuffle)
 {
 	LockGrid();
-	std::cout << "initialize lock" << std::endl;
-	for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < GRID_WIDTH; ++i)
 	{
-		columnOffsets.at(i).first = GRID_HEIGHT - 1;
-		columnOffsets.at(i).second -= static_cast<float>((GRID_HEIGHT * gridOffset + (GRID_HEIGHT - i) * gridOffset));
-		for (int j = 0; j < 8; ++j)
+		if (!reshuffle)
+		{
+			columnOffsets.at(i).first = GRID_HEIGHT - 1;
+			columnOffsets.at(i).second -= static_cast<float>((GRID_HEIGHT * gridOffset + (GRID_HEIGHT - i) * gridOffset));
+		}
+		for (int j = 0; j < GRID_HEIGHT; ++j)
 		{
 			// Fill in by random values between 1 and 5 -> textures for gems
 			while (true)
@@ -53,6 +48,24 @@ void GemGrid::InitializeGrid()
 			}
 		}
 	}
+}
+
+void GemGrid::EmptyGrid()
+{
+	for (int i = 0; i < GRID_WIDTH; ++i)
+	{
+		for (int j = 0; j < GRID_HEIGHT; ++j)
+		{
+			delete gemGrid[i][j];
+		}
+	}
+}
+
+
+void GemGrid::Reshuffle()
+{
+	EmptyGrid();
+	InitializeGrid(true);
 }
 
 /// <summary> Gets gem grid </summary>
@@ -96,7 +109,6 @@ bool GemGrid::IsCascadePresent()
 /// <returns> Number of gems destroyed </returns>
 int GemGrid::DestroyGems()
 {
-	std::cout << "DestroyGems" << std::endl;
 	markToDestroy();
 
 	for (int row = 0; row < GRID_WIDTH; ++row)
@@ -158,10 +170,8 @@ float GemGrid::GetColumnOffset(int column)
 /// <summary> Let the nature do it's job with the gems </summary>
 void GemGrid::ActivateGravity()
 {
-	std::cout << "ActivateGravity" << std::endl;
 	// Disable user interaction while gravity is on 
 	LockGrid();
-	std::cout << "ActivateGravity lock" << std::endl;
 
 	for (size_t iterator = 0; iterator < columnOffsets.size(); iterator++)
 	{
@@ -196,7 +206,6 @@ void GemGrid::GravityPull()
 
 	if (!IsGravityActive())
 	{
-		std::cout << "gravity not active. unlocking grid" << std::endl;
 		// Enable user interaction if gravity did it's job
 		gravityIncrementer = 0.0f;
 		UnlockGrid();
@@ -220,7 +229,6 @@ bool GemGrid::IsGravityActive()
 			return true;
 		}
 	}
-	std::cout << "gravity not active" << std::endl;
 	return false;
 }
 
@@ -233,14 +241,12 @@ bool GemGrid::IsGridLocked()
 /// <summary> Locks grid for interaction </summary>
 void GemGrid::LockGrid()
 {
-	std::cout << "LockGrid" << std::endl;
 	gridLocked = true;
 }
 
 /// <summary> Unlocks grid for interaction </summary>
 void GemGrid::UnlockGrid()
 {
-	std::cout << "UnlockGrid" << std::endl;
 	gridLocked = false;
 }
 
@@ -530,7 +536,6 @@ bool GemGrid::alreadyMarkedForDestruction(int column, int row)
 void GemGrid::SwitchGems(int passedFromX, int passedFromY, int passedToX, int passedToY)
 {
 	gemMoving = true;
-	std::cout << "SwitchGems lock" << std::endl;
 	LockGrid();
 	fromX = passedFromX;
 	fromY = passedFromY;

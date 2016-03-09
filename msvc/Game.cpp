@@ -30,8 +30,7 @@ void Game::Update()
 		case MENU:
 		{
 			renderer->RenderStartScreen();
-
-			mEngine.Write("Click to start", 300.0f, 330.0f);
+				mEngine.Write("Click to start", 300.0f, 330.0f);
 
 			if (mEngine.GetMouseButtonDown())
 			{
@@ -49,8 +48,8 @@ void Game::Update()
 			if (slidePositionY > mEngine.GetHeight())
 			{
 				mode = GAME;
-				// Reset sliding parameters after sliding is over
-				slidePositionY = 0.0f;
+				// Prepare sliding parameters to game over sliding
+				slidePositionY = mEngine.GetHeight();
 				slideIncrementer = 0.0f;
 			}
 
@@ -79,11 +78,12 @@ void Game::Update()
 				{
 					possibleMoves moves = grid->FindPossibleMoves();
 					std::cout << "checking ... " << std::endl;
-						 
-					/*for (auto move : moves)
+
+					if (moves.size() == 0)
 					{
-						std::cout << move.first.first << " " << move.first.second << "|" << move.second.first << " " << move.second.second << std::endl;
-					}*/
+
+					}
+
 				}
 
 				if (grid->IsCascadePresent())
@@ -116,13 +116,46 @@ void Game::Update()
 
 			if (static_cast<int>(referenceClock) == gameDuration)
 			{
-				mode = MENU;
+				mode = GAMEOVERSLIDE;
 				referenceClock = 0.0f;
-				score = 0;
 			}
 
 			// Render the top of the grid so it is above gems falling from the top
 			renderer->RenderTop();
+			break;
+		}
+		case GAMEOVERSLIDE:
+		{
+			renderer->RenderBackground();
+			renderer->RenderStartScreen(slidePositionX, slidePositionY);
+			slidePositionY -= slideIncrementer;
+			++slideIncrementer;
+
+			if (slidePositionY < 0)
+			{
+				mode = GAMEOVER;
+				// Reset sliding parameters after sliding is over
+				slidePositionY = 0.0f;
+			}
+			break;
+		}
+		case GAMEOVER:
+		{
+			renderer->RenderStartScreen();
+
+			std::string s = std::to_string(score);
+			char const *pchar = s.c_str();
+			mEngine.Write("Score:", 330.0f, 330.0f);
+			mEngine.Write(pchar, 410.0f, 330.0f);
+			mEngine.Write("Click to retry", 300.0f, 360.0f);
+
+			if (mEngine.GetMouseButtonDown())
+			{
+				score = 0;
+				mode = MENUSLIDE;
+				delete grid;
+				grid = new GemGrid();
+			}
 			break;
 		}
 	}
@@ -159,7 +192,7 @@ bool Game::HandleGemInteraction()
 			if (abs(clickedGem->GetOffsetX()) > 15.f ||
 				abs(clickedGem->GetOffsetY()) > 15.f)
 			{
-				
+
 				grid->SwitchGems(selectedGemX, selectedGemY, switchGemX, switchGemY);
 				resetClickedGemCoordinates();
 			}
