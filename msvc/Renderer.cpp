@@ -3,6 +3,8 @@
 Renderer::Renderer(King::Engine& passedEngine, GemGrid& passedGrid)
 	: mEngine(&passedEngine)
 	, grid(&passedGrid)
+	, clock(0.0f)
+	, matchRendererInProgress(false)
 {
 }
 
@@ -11,25 +13,39 @@ Renderer::~Renderer()
 }
 
 /// <summary> Renders start screen </summary>
-void Renderer::RenderStartScreen(float x, float y)
+void Renderer::RenderStartScreen(float x, float y) const
 {
 	mEngine->Render(King::Engine::TEXTURE_START, x, y);
 }
 
 /// <summary> Renders background </summary>
-void Renderer::RenderBackground()
+void Renderer::RenderBackground() const
 {
 	mEngine->Render(King::Engine::TEXTURE_BACKGROUND, 0, 0);
+	mEngine->Render(King::Engine::TEXTURE_WOOD, 20, 10);
 }
 
 /// <summary> Renders top of the gem grid </summary>
-void Renderer::RenderTop()
+void Renderer::RenderTop() const
 {
 	mEngine->Render(King::Engine::TEXTURE_TOP, 214, 0);
 }
 
+/// <summary> Renders score </summary>
+void Renderer::RenderScore(const char* score) const
+{
+	mEngine->Write("Score:", 55.0f, 25.0f);
+	mEngine->Write(score, 55.0f, 50.0f);
+}
+
+/// <summary> Renders score </summary>
+void Renderer::RenderTime(const char* time) const
+{
+	mEngine->Write(time, 100.0f, 450.0f);
+}
+
 /// <summary> Renders gem grid </summary>
-void Renderer::RenderGemGrid()
+void Renderer::RenderGemGrid() const
 {
 	gemGrid8x8& gemGrid = grid->GetGemGrid();
 
@@ -58,13 +74,13 @@ void Renderer::RenderGemGrid()
 /// <summary> Renders which gems are going to be destroyed </summary>
 void Renderer::RenderToBeDestroyed(std::vector<std::pair<int, int>> gemsToBeDestroyed)
 {
-	MatchRendererInProgress = true;
+	matchRendererInProgress = true;
 
 	// If more than 0.02 seconds passed
 	if (clock > 0.02f)
 	{
 		clock = 0.0f;
-		MatchRendererInProgress = false;
+		matchRendererInProgress = false;
 	}
 
 	clock += mEngine->GetLastFrameSeconds();
@@ -82,38 +98,44 @@ void Renderer::RenderToBeDestroyed(std::vector<std::pair<int, int>> gemsToBeDest
 }
 
 /// <summary> Renders red square around selected gem </summary>
-void Renderer::RenderSelected(int selectedGemX, int selectedGemY)
+void Renderer::RenderSelected(int selectedGemX, int selectedGemY) const
 {
 	if (selectedGemX != -1 && selectedGemY != -1)
 		mEngine->Render(King::Engine::TEXTURE_SELECTED, grid->gridXStart + selectedGemX*grid->gridOffset - 4.0f, grid->gridYStart + selectedGemY*grid->gridOffset - 4.0f);
 }
 
 /// <summary> Renders menu screen </summary>
-void Renderer::RenderMenu()
+void Renderer::RenderMenu() const
 {
 	RenderStartScreen();
 	mEngine->Write("Click to start", 290.0f, 560.0f);
 }
 
 /// <summary> Renders sliding menu screen </summary>
-void Renderer::RenderMenuSlide(float x, float y)
+void Renderer::RenderMenuSlide(float x, float y) const
 {
 	RenderBackground();
 	RenderStartScreen(x, y);
 }
 
 /// <summary> Renders game over sliding screen </summary>
-void Renderer::RenderGameOverSlide(float x, float y)
+void Renderer::RenderGameOverSlide(float x, float y) const
 {
 	RenderBackground();
 	RenderStartScreen(x, y);
 }
 
-/// <summary> Renders game over screen</summary>
-void Renderer::RenderGameOver(const char* score)
+/// <summary> Renders game over screen </summary>
+void Renderer::RenderGameOver(const char* score) const
 {
 	RenderStartScreen();
 	mEngine->Write("Score:", 330.0f, 530.0f);
 	mEngine->Write(score, 410.0f, 530.0f);
 	mEngine->Write("Click to retry", 295.0f, 560.0f);
+}
+
+/// <summary> Check if rendering of current match is ongoing </summary>
+bool Renderer::IsMatchRenderingInProgress() const
+{
+	return matchRendererInProgress;
 }

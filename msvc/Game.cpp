@@ -84,7 +84,7 @@ void Game::Update()
 				{
 					renderer->RenderToBeDestroyed(grid->GetGemsToDestroy());
 
-					if (!renderer->MatchRendererInProgress)
+					if (!renderer->IsMatchRenderingInProgress())
 					{
 						grid->ActivateGravity();
 						score += grid->DestroyGems();
@@ -98,15 +98,14 @@ void Game::Update()
 			}
 
 			// Draw score
-			mEngine.Write("Score", 50.0f, 25.0f);
 			std::string s = std::to_string(score);
-			char const *pchar = s.c_str();
-			mEngine.Write(pchar, 50.0f, 50.0f);
+			char const *cscore = s.c_str();
+			renderer->RenderScore(cscore);
 
 			// Draw time
 			s = std::to_string(gameDuration - static_cast<int>(referenceClock));
-			pchar = s.c_str();
-			mEngine.Write(pchar, 100.0f, 450.0f);
+			char const *ctime = s.c_str();
+			renderer->RenderTime(ctime);
 
 			if (static_cast<int>(referenceClock) == gameDuration)
 			{
@@ -466,6 +465,6 @@ void Game::startNewGame()
 	slidePositionY = 0.0f;
 	slideIncrementer = 0.0f; 
 
-	delete grid;
-	grid = new GemGrid();
+	grid->EmptyGrid();
+	grid->InitializeGrid();
 }

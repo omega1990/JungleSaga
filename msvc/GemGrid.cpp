@@ -50,6 +50,7 @@ void GemGrid::InitializeGrid(bool reshuffle)
 			}
 		}
 	}
+	checkPossibleMoves = true;
 }
 
 /// <summary> Frees memory allocated for gem grid </summary>

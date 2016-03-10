@@ -83,6 +83,7 @@ namespace King {
 		std::string empty = assets; empty += "/Empty.png";
 		std::string selected = assets; selected += "/Selected.png";
 		std::string top = assets; top += "/Top.png";
+		std::string wood = assets; wood += "/Wood.png";
 		std::string font = assets; font += "/berlin_sans_demi_72_0.png";
 
 		// Surface container sadržava sve teksture (spriteove)
@@ -97,6 +98,7 @@ namespace King {
 		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_SELECTED].reset(new SdlSurface(selected.c_str()));
 		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_TBD].reset(new SdlSurface(toBeDestroyed.c_str()));
 		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_TOP].reset(new SdlSurface(top.c_str()));
+		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_WOOD].reset(new SdlSurface(wood.c_str()));
 		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_EMPTY].reset(new SdlSurface(empty.c_str()));
 
 		// Specifikacija fonta - ne moras dirat
