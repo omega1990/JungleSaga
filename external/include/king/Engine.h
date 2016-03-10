@@ -22,7 +22,6 @@ namespace King {
 			TEXTURE_EMPTY,
 			TEXTURE_SELECTED,
 			TEXTURE_TOP,
-			TEXTURE_WOOD,
 			TEXTURE_MAX
 		};
 

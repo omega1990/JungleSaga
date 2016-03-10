@@ -49,8 +49,8 @@ public:
 
 
 	// Constants
-	const float gridXStart = 330.0f;
-	const float gridYStart = 100.0f;
+	const float gridXStart = 205.0f;
+	const float gridYStart = 150.0f;
 	const float gridOffset = 43.0f;
 
 private:

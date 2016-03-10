@@ -79,7 +79,7 @@ King::Engine::Texture GemGrid::GenerateRandomGemColor() const
 {
 	std::random_device rd;
 	std::mt19937 mt(rd());
-	std::uniform_int_distribution<int> dist(1, std::nextafter(5, INT_MAX));
+	std::uniform_int_distribution<int> dist(1.0, std::nextafter(5, INT_MAX));
 
 	return static_cast<King::Engine::Texture>(dist(mt));
 }
@@ -545,8 +545,8 @@ void GemGrid::SwitchGems(int passedFromX, int passedFromY, int passedToX, int pa
 /// </summary>
 void GemGrid::AnimateGemSwitch()
 {
-	LockGrid();
 	bool movePossible = false;
+	LockGrid();
 	for (auto possibleMove : possibleMoves)
 	{
 		if (possibleMove.first.first == fromX && possibleMove.first.second == fromY

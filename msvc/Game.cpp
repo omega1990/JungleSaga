@@ -41,7 +41,6 @@ void Game::Update()
 	{
 		case MENU:
 		{
-
 			renderer->RenderMenu();
 			handleUserInteraction();
 			break;
@@ -355,8 +354,8 @@ bool Game::isClickInsideGameArea() const
 /// <summary> Gets current gem offset from it's natural position </summary>
 std::pair<float, Gem::direction> Game::getGemOffset(Gem &gem) const
 {
-	int mouseStartX = gem.getMouseMoveStart().first;
-	int mouseStartY = gem.getMouseMoveStart().second;
+	int mouseStartX = static_cast<int>(gem.getMouseMoveStart().first);
+	int mouseStartY = static_cast<int>(gem.getMouseMoveStart().second);
 
 	switch (gemDirection)
 	{

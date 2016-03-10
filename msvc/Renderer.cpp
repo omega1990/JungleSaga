@@ -22,26 +22,24 @@ void Renderer::RenderStartScreen(float x, float y) const
 void Renderer::RenderBackground() const
 {
 	mEngine->Render(King::Engine::TEXTURE_BACKGROUND, 0, 0);
-	mEngine->Render(King::Engine::TEXTURE_WOOD, 20, 10);
 }
 
 /// <summary> Renders top of the gem grid </summary>
 void Renderer::RenderTop() const
 {
-	mEngine->Render(King::Engine::TEXTURE_TOP, 214, 0);
+	mEngine->Render(King::Engine::TEXTURE_TOP, 83, 0);
 }
 
 /// <summary> Renders score </summary>
 void Renderer::RenderScore(const char* score) const
 {
-	mEngine->Write("Score:", 55.0f, 25.0f);
-	mEngine->Write(score, 55.0f, 50.0f);
+	mEngine->Write(score, 80.0f, 250.0f);
 }
 
 /// <summary> Renders score </summary>
 void Renderer::RenderTime(const char* time) const
 {
-	mEngine->Write(time, 100.0f, 450.0f);
+	mEngine->Write(time, 650.0f, 250.0f);
 }
 
 /// <summary> Renders gem grid </summary>
