@@ -14,8 +14,6 @@ public:
 	void Start();
 	void Update();
 	
-	bool HandleGemInteraction();
-
 	enum GameMode
 	{
 		MENU, 
@@ -28,48 +26,51 @@ public:
 	GameMode mode = MENU;
 
 private:
-	int score;
-
 	King::Engine mEngine;
 	GemGrid* grid;
-	gemGrid8x8& gridArray;
+	gemGrid8x8& gemGrid;
 	Renderer* renderer;
+	
+	int score;
 
-	float mRotation;
-	float referenceClock = 0.0f;
-	bool gemLocked = false;
-	bool swipePerformed = false;
-	bool firstGemLocked = false;
-	bool clickReleased = false;
+	float referenceClock;
+	bool gemLocked;
+	bool swipePerformed;
+	bool mouseDownAlreadyHandled;
 
 	int selectedGemX;
 	int selectedGemY;
+	int switchGemX;
+	int switchGemY;
 
-	int clickDown = 0;
-	bool clickUp = false;;
-
-	float angle;
-
-	int switchGemX = 0;
-	int switchGemY = 0;
+	float slidePositionX;
+	float slidePositionY;
+	float slideIncrementer;
 
 	Gem::direction gemDirection;
 
-	Gem* clickedGem = nullptr;
-	Gem* switchingGem = nullptr;
-	Gem* previousSwitchingGem = nullptr;
+	Gem* clickedGem;
+	Gem* switchingGem;
+	Gem* previousSwitchingGem;
 
-	Gem::direction getMouseDirection(float mouseStartPositionX, float mouseStartPositionY);
-	bool Game::isClickInsideGameArea();
-	std::pair<float, Gem::direction> getGemOffset(Gem &gem);
+	void handleUserInteraction();
 	void Game::handleGemClick();
 	void Game::handleGemSwipe();
+
+	Gem::direction getMouseDirection(std::pair<float, float> startMousePosition) const;
+	bool Game::isClickInsideGameArea() const;
+	std::pair<float, Gem::direction> getGemOffset(Gem &gem) const;
 	void Game::resetClickedGemCoordinates();
+	bool Game::isOffsetBigEnoughForSwap() const;
+	void Game::resetSwappingGemPositions();
+	bool Game::isOffsetBigEnoughForSwipe() const;
+	bool Game::isGemNeighbour (int gemX, int gemY) const;
+	void Game::selectGem(int gemX, int gemY);
+	void Game::handleMenuSlideDown();
+	void Game::handleGameOverSlideUp();
+	void Game::startNewGame();
 
-	const int gameDuration = 2;
 
-
-	float slidePositionX = 0.0f;
-	float slidePositionY = 0.0f;
-	float slideIncrementer = 0.0f;
+	
+	const int gameDuration = 10;
 };

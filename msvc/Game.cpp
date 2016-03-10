@@ -3,13 +3,24 @@
 
 Game::Game()
 	: mEngine("./assets")
-	, mRotation(0.0f)
-	, score(0)
 	, grid(new GemGrid())
-	, gridArray(grid->GetGemGrid())
+	, gemGrid(grid->GetGemGrid())
 	, renderer(new Renderer(mEngine, *grid))
-	, selectedGemX(-1)
-	, selectedGemY(-1)
+	, score(0)
+	, selectedGemX(DEFAULT_COORDINATE)
+	, selectedGemY(DEFAULT_COORDINATE)
+	, switchGemX(0)
+	, switchGemY(0)
+	, referenceClock(0.0f)
+	, gemLocked(false)
+	, swipePerformed(false)
+	, mouseDownAlreadyHandled(false)
+	, clickedGem(nullptr)
+	, switchingGem(nullptr)
+	, previousSwitchingGem(nullptr)
+	, slidePositionX(0.0f)
+	, slidePositionY(0.0f)
+	, slideIncrementer(0.0f)
 {};
 
 Game::~Game()
@@ -29,36 +40,20 @@ void Game::Update()
 	{
 		case MENU:
 		{
-			renderer->RenderStartScreen();
-				mEngine.Write("Click to start", 300.0f, 330.0f);
-
-			if (mEngine.GetMouseButtonDown())
-			{
-				mode = MENUSLIDE;
-			}
+			renderer->RenderMenu();
+			handleUserInteraction();
 			break;
 		}
 		case MENUSLIDE:
 		{
-			renderer->RenderBackground();
-			renderer->RenderStartScreen(slidePositionX, slidePositionY);
-			slidePositionY += slideIncrementer;
-			++slideIncrementer;
-
-			if (slidePositionY > mEngine.GetHeight())
-			{
-				mode = GAME;
-				// Prepare sliding parameters to game over sliding
-				slidePositionY = mEngine.GetHeight();
-				slideIncrementer = 0.0f;
-			}
-
+			renderer->RenderMenuSlide(slidePositionX, slidePositionY);
+			handleMenuSlideDown();
 			break;
 		}
 		case GAME:
 		{
 			// If gem was clicked to switch, perform the animation of switching
-			if (grid->gemMoving)
+			if (grid->IsGemMoving())
 			{
 				grid->AnimateGemSwitch();
 			}
@@ -72,18 +67,17 @@ void Game::Update()
 			// If grid is not locked, perform handling of user interaction 
 			if (!grid->IsGridLocked())
 			{
-				HandleGemInteraction();
+				handleUserInteraction();
 
-				if (grid->checkPossibleMoves)
+				if (grid->possibleCheckPending())
 				{
 					possibleMoves moves = grid->FindPossibleMoves();
 					std::cout << "checking ... " << std::endl;
 
 					if (moves.size() == 0)
 					{
-
+						grid->Reshuffle();
 					}
-
 				}
 
 				if (grid->IsCascadePresent())
@@ -126,91 +120,77 @@ void Game::Update()
 		}
 		case GAMEOVERSLIDE:
 		{
-			renderer->RenderBackground();
-			renderer->RenderStartScreen(slidePositionX, slidePositionY);
-			slidePositionY -= slideIncrementer;
-			++slideIncrementer;
-
-			if (slidePositionY < 0)
-			{
-				mode = GAMEOVER;
-				// Reset sliding parameters after sliding is over
-				slidePositionY = 0.0f;
-			}
+			renderer->RenderGameOverSlide(slidePositionX, slidePositionY);
+			handleGameOverSlideUp();			
 			break;
 		}
 		case GAMEOVER:
 		{
-			renderer->RenderStartScreen();
-
 			std::string s = std::to_string(score);
 			char const *pchar = s.c_str();
-			mEngine.Write("Score:", 330.0f, 330.0f);
-			mEngine.Write(pchar, 410.0f, 330.0f);
-			mEngine.Write("Click to retry", 300.0f, 360.0f);
-
-			if (mEngine.GetMouseButtonDown())
-			{
-				score = 0;
-				mode = MENUSLIDE;
-				delete grid;
-				grid = new GemGrid();
-			}
+			renderer->RenderGameOver(pchar);
+			handleUserInteraction();
 			break;
 		}
 	}
 }
 
-bool Game::HandleGemInteraction()
+/// <summary> handles user interaction with the board </summary>
+void Game::handleUserInteraction()
 {
 	// If mouse is down
 	if (mEngine.GetMouseButtonDown())
 	{
-		// If click was inside the gem grid
+		// Handle user interaction to switch between game modes
+		switch (mode)
+		{
+		case MENU:
+			mode = MENUSLIDE;
+			return;
+		case GAMEOVER:
+			if(!mouseDownAlreadyHandled)
+				startNewGame();
+			return;
+		}
+
+		// If click was inside the gem grid handle it
 		if (isClickInsideGameArea())
 		{
 			handleGemClick();
 		}
-		// If click was outside of the grid
-		//else
-		//{
-		//	resetClickedGemCoordinates();
-		//}
-		clickDown = true;
+		mouseDownAlreadyHandled = true;
 	}
 
 	// If mouse is up
 	else
 	{
-		clickDown = false;
+		// If mouse click is up, next we handle is the first click down
+		mouseDownAlreadyHandled = false;
+
 		// If mouse click is up, swipe is over
 		swipePerformed = false;
 
 		// Now, perform switching if gem offset after swipe is big enough
 		if (clickedGem != nullptr && switchingGem != nullptr)
 		{
-			if (abs(clickedGem->GetOffsetX()) > 15.f ||
-				abs(clickedGem->GetOffsetY()) > 15.f)
+			if (isOffsetBigEnoughForSwap())
 			{
-
 				grid->SwitchGems(selectedGemX, selectedGemY, switchGemX, switchGemY);
 				resetClickedGemCoordinates();
 			}
 			else
 			{
 				// If no switch is performed, return the gems to their original positions
-				gridArray[selectedGemX][selectedGemY]->SetOffset(0, 0);
-				gridArray[switchGemX][switchGemY]->SetOffset(0, 0);
+				resetSwappingGemPositions();
 			}
 		}
 	}
 
 	// If gem is locked, and swipe is not active, render the selection box
-	if (gemLocked && !swipePerformed) renderer->RenderSelected(selectedGemX, selectedGemY);
-
-	return false;
+	if (gemLocked && !swipePerformed && mode != GAMEOVER) renderer->RenderSelected(selectedGemX, selectedGemY);
 }
 
+/// <summary> Handles clicking on the board </summary>
 void Game::handleGemClick()
 {
 	int gemX = static_cast<int>((mEngine.GetMouseX() - grid->gridXStart) / grid->gridOffset);
@@ -220,16 +200,13 @@ void Game::handleGemClick()
 	if (gemX == selectedGemX && gemY == selectedGemY)
 	{
 		// Do not perform swipe until user tries to swap for more than 1.0f of distance
-		if (swipePerformed ||
-			getGemOffset(*gridArray[selectedGemX][selectedGemY]).first > 1.0f ||
-			getGemOffset(*gridArray[selectedGemX][selectedGemY]).first < -1.0f)
+		if (swipePerformed || isOffsetBigEnoughForSwipe())
 		{
 			handleGemSwipe();
 		}
 		// Element was deselected
-		else if (clickDown == false)
+		else if (mouseDownAlreadyHandled == false)
 		{
-			std::cout << "Click" << std::endl;
 			resetClickedGemCoordinates();
 		}
 	}
@@ -237,27 +214,21 @@ void Game::handleGemClick()
 	// If the click was on different gem
 	else if (gemX != selectedGemX || gemY != selectedGemY)
 	{
-		if (clickDown == false)
+		if (mouseDownAlreadyHandled == false)
 		{
 			// If it is neighbour, switch gems
-			if (((abs(selectedGemX - gemX) == 1 && abs(selectedGemY - gemY) == 0) ||
-				(abs(selectedGemY - gemY) == 1 && abs(selectedGemX - gemX) == 0)) &&
-				gemLocked)
+			if (isGemNeighbour(gemX, gemY) && gemLocked)
 			{
-
 				grid->SwitchGems(selectedGemX, selectedGemY, gemX, gemY);
 				resetClickedGemCoordinates();
 			}
 			// If it is not neighbour, select the clicked gem
 			else
 			{
-				selectedGemX = gemX;
-				selectedGemY = gemY;
-				gemLocked = true;
-				gridArray[selectedGemX][selectedGemY]->mouseMoveStartX = mEngine.GetMouseX();
-				gridArray[selectedGemX][selectedGemY]->mouseMoveStartY = mEngine.GetMouseY();
+				selectGem(gemX, gemY);
 			}
 		}
+		// If mouse is down for more than one frame, handle it as swipe
 		else
 		{
 			handleGemSwipe();
@@ -265,14 +236,15 @@ void Game::handleGemClick()
 	}
 }
 
+/// <summary> Handles swiping on the board </summary>
 void Game::handleGemSwipe()
 {
 	if (gemLocked)
 	{
 		swipePerformed = true;
-		clickedGem = gridArray[selectedGemX][selectedGemY];
+		clickedGem = gemGrid[selectedGemX][selectedGemY];
 
-		gemDirection = getMouseDirection(clickedGem->mouseMoveStartX, clickedGem->mouseMoveStartY);
+		gemDirection = getMouseDirection(clickedGem->getMouseMoveStart());
 		std::pair<float, Gem::direction> offsetDirection = getGemOffset(*clickedGem);
 
 		switch (offsetDirection.second)
@@ -280,33 +252,34 @@ void Game::handleGemSwipe()
 		case Gem::HORIZONTAL_LEFT:
 			switchGemX = selectedGemX - 1;
 			switchGemY = selectedGemY;
-			switchingGem = gridArray[selectedGemX - 1][selectedGemY];
+			switchingGem = gemGrid[selectedGemX - 1][selectedGemY];
 			clickedGem->SetOffset(offsetDirection.first, 0);
 			switchingGem->SetOffset(-offsetDirection.first, 0);
 			break;
 		case Gem::HORIZONTAL_RIGHT:
 			switchGemX = selectedGemX + 1;
 			switchGemY = selectedGemY;
-			switchingGem = gridArray[selectedGemX + 1][selectedGemY];
+			switchingGem = gemGrid[selectedGemX + 1][selectedGemY];
 			clickedGem->SetOffset(-offsetDirection.first, 0);
 			switchingGem->SetOffset(offsetDirection.first, 0);
 			break;
 		case Gem::VERTICAL_UP:
 			switchGemX = selectedGemX;
 			switchGemY = selectedGemY - 1;
-			switchingGem = gridArray[selectedGemX][selectedGemY - 1];
+			switchingGem = gemGrid[selectedGemX][selectedGemY - 1];
 			clickedGem->SetOffset(0, offsetDirection.first);
 			switchingGem->SetOffset(0, -offsetDirection.first);
 			break;
 		case Gem::VERTICAL_DOWN:
 			switchGemX = selectedGemX;
 			switchGemY = selectedGemY + 1;
-			switchingGem = gridArray[selectedGemX][selectedGemY + 1];
+			switchingGem = gemGrid[selectedGemX][selectedGemY + 1];
 			clickedGem->SetOffset(0, -offsetDirection.first);
 			switchingGem->SetOffset(0, offsetDirection.first);
 			break;
 		default:
 			clickedGem->ResetOffset();
+			break;
 		}
 
 		if (switchingGem != previousSwitchingGem
@@ -318,24 +291,26 @@ void Game::handleGemSwipe()
 	}
 }
 
+/// <summary> Resets coordinates stored for currently selected and switching gem to defaults </summary>
 void Game::resetClickedGemCoordinates()
 {
-	switchGemX = -1;
-	switchGemY = -1;
-	selectedGemX = -1;
-	selectedGemY = -1;
+	switchGemX = DEFAULT_COORDINATE;
+	switchGemY = DEFAULT_COORDINATE;
+	selectedGemX = DEFAULT_COORDINATE;
+	selectedGemY = DEFAULT_COORDINATE;
 
 	gemLocked = false;
 	clickedGem = nullptr;
 	switchingGem = nullptr;
 }
 
-Gem::direction Game::getMouseDirection(float mouseStartPositionX, float mouseStartPositionY)
+/// <summary> Gets the direction in which mouse went during the mouse </summary>
+Gem::direction Game::getMouseDirection(std::pair<float, float> startMousePosition) const 
 {
-	// Ako ti je mis otisa horizontalno
-	if (abs(mEngine.GetMouseX() - mouseStartPositionX) >= abs(mEngine.GetMouseY() - mouseStartPositionY))
+	// If mouse went somewhere horizontally
+	if (abs(mEngine.GetMouseX() - startMousePosition.first) >= abs(mEngine.GetMouseY() - startMousePosition.second))
 	{
-		if (mEngine.GetMouseX() > mouseStartPositionX)
+		if (mEngine.GetMouseX() > startMousePosition.first)
 		{
 			return Gem::HORIZONTAL_RIGHT;
 		}
@@ -344,10 +319,10 @@ Gem::direction Game::getMouseDirection(float mouseStartPositionX, float mouseSta
 			return Gem::HORIZONTAL_LEFT;
 		}
 	}
-	// Ako ti je mis otisa vertikalno
+	// If mouse went somewhere vertically
 	else
 	{
-		if (mEngine.GetMouseY() > mouseStartPositionY)
+		if (mEngine.GetMouseY() > startMousePosition.second)
 		{
 			return Gem::VERTICAL_DOWN;
 		}
@@ -358,7 +333,8 @@ Gem::direction Game::getMouseDirection(float mouseStartPositionX, float mouseSta
 	}
 }
 
-bool Game::isClickInsideGameArea()
+/// <summary> Checks if click was inside game area </summary>
+bool Game::isClickInsideGameArea() const
 {
 	if (mEngine.GetMouseX() > grid->gridXStart
 		&& mEngine.GetMouseX() < grid->gridXStart + (static_cast<float>(GRID_WIDTH) * grid->gridOffset)
@@ -369,10 +345,11 @@ bool Game::isClickInsideGameArea()
 	return false;
 }
 
-std::pair<float, Gem::direction> Game::getGemOffset(Gem &gem)
+/// <summary> Gets current gem offset from it's natural position </summary>
+std::pair<float, Gem::direction> Game::getGemOffset(Gem &gem) const
 {
-	int mouseStartX = gem.mouseMoveStartX;
-	int mouseStartY = gem.mouseMoveStartY;
+	int mouseStartX = gem.getMouseMoveStart().first;
+	int mouseStartY = gem.getMouseMoveStart().second;
 
 	switch (gemDirection)
 	{
@@ -391,4 +368,104 @@ std::pair<float, Gem::direction> Game::getGemOffset(Gem &gem)
 	default:
 		return std::make_pair(0, Gem::STATIONARY);
 	}
+}
+
+/// <summary> Check if gem was moved enough to swap gems </summary>
+bool Game::isOffsetBigEnoughForSwap() const
+{
+	if (abs(clickedGem->GetOffsetX()) > OFFSET_FOR_SWAP ||
+		abs(clickedGem->GetOffsetY()) > OFFSET_FOR_SWAP)
+		return true;
+	else
+		return false;
+}
+
+/// <summary> Returns selected and switching gem to their original positions </summary>
+void Game::resetSwappingGemPositions()
+{
+	gemGrid[selectedGemX][selectedGemY]->SetOffset(0, 0);
+	gemGrid[switchGemX][switchGemY]->SetOffset(0, 0);
+}
+
+/// <summary> Check if gem was moved enough start the swipe movement </summary>
+bool Game::isOffsetBigEnoughForSwipe() const
+{
+	if (getGemOffset(*gemGrid[selectedGemX][selectedGemY]).first > OFFSET_FOR_SWIPE ||
+		getGemOffset(*gemGrid[selectedGemX][selectedGemY]).first < -OFFSET_FOR_SWIPE)
+		return true;
+	else
+		return false;
+}
+
+/// <summary> Check if gem with x and y coordinates is neighbour of currently selected gem </summary>
+bool Game::isGemNeighbour(int gemX, int gemY) const
+{
+	if ((abs(selectedGemX - gemX) == 1 && abs(selectedGemY - gemY) == 0) ||
+		(abs(selectedGemY - gemY) == 1 && abs(selectedGemX - gemX) == 0))
+		return true;
+	else
+		return false;
+}
+
+/// <summary> Set the gem with specified coordinates as selected </summary>
+void Game::selectGem(int gemX, int gemY)
+{
+	selectedGemX = gemX;
+	selectedGemY = gemY;
+	gemLocked = true;
+	
+	gemGrid[selectedGemX][selectedGemY]->SetMouseMoveStart(mEngine.GetMouseX(), mEngine.GetMouseY());
+}
+
+/// <summary> Handle sliding of the start menu </summary>
+void Game::handleMenuSlideDown()
+{
+	slidePositionY += slideIncrementer++;
+	if (slidePositionY > mEngine.GetHeight())
+	{
+		mode = GAME;
+		// Prepare sliding parameters to game over sliding
+		slidePositionY = mEngine.GetHeight();
+		slideIncrementer = 0.0f;
+	}
+}
+
+/// <summary> Handle sliding of the game over menu </summary>
+void Game::handleGameOverSlideUp()
+{
+	slidePositionY -= slideIncrementer;
+	++slideIncrementer;
+
+	if (slidePositionY < 0)
+	{
+		mode = GAMEOVER;
+		// Reset sliding parameters after sliding is over
+		slidePositionY = 0.0f;
+	}
+}
+
+/// <summary> Resets all fields to default values and re-initates gem grid </summary>
+void Game::startNewGame()
+{
+	score = 0;
+	mode = MENUSLIDE;
+	
+	score = 0;
+	selectedGemX = DEFAULT_COORDINATE;
+	selectedGemY = DEFAULT_COORDINATE;
+	switchGemX = 0;
+	switchGemY = 0;
+	referenceClock = 0.0f;
+	gemLocked = false;
+	swipePerformed = false;
+	mouseDownAlreadyHandled = false;
+	clickedGem = nullptr;
+	switchingGem = nullptr;
+	previousSwitchingGem = nullptr;
+	slidePositionX = 0.0f;
+	slidePositionY = 0.0f;
+	slideIncrementer = 0.0f; 
+
+	delete grid;
+	grid = new GemGrid();
 }

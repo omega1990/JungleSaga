@@ -1,11 +1,15 @@
 #pragma once
+#include<vector>
 
 #define GRID_WIDTH 8
 #define GRID_HEIGHT 8
 
 #define MAX_GEM_OFFSET 43.0f
+#define DEFAULT_COORDINATE -1
 
-#include<vector>
+#define OFFSET_FOR_SWAP 15.0f
+#define OFFSET_FOR_SWIPE 1.0f
+
 
 // Forward declaration
 typedef class Gem* (gemGrid8x8)[8][8];

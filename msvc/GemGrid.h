@@ -18,22 +18,22 @@ public:
 	King::Engine::Texture GemGrid::GenerateRandomGemColor() const;	
 	bool IsCascadePresent();
 	int DestroyGems();
-	std::vector<std::pair<int, int>> GetGemsToDestroy();
-	std::vector<std::pair<int, float>> GetColumnOffsets();
-	float GetColumnOffset(int column);
+	std::vector<std::pair<int, int>> GetGemsToDestroy() const;
+	std::vector<std::pair<int, float>> GetColumnOffsets() const;
+	float GetColumnOffset(int column) const;
 
 	void EmptyGrid();
 	void Reshuffle();
 	
 	void ActivateGravity();
 	void GravityPull();
-	bool IsGravityActive();
+	bool IsGravityActive() const;
 
-	bool IsGridLocked();
+	bool IsGridLocked() const;
 	void LockGrid();
 	void UnlockGrid();
 
-	void PrintGrid();
+	void PrintGrid() const;
 
 	void SwitchGems(int fromX, int fromY, int toX, int toY);
 	void AnimateGemSwitch();
@@ -41,8 +41,10 @@ public:
 
 	possibleMoves FindPossibleMoves();
 
-	bool gemMoving = false;
-	bool checkPossibleMoves = true;
+	bool IsGemMoving() const;
+	void SetGemMoving(bool isMoving = true);
+
+	bool possibleCheckPending() const;
 
 
 	// Constants
@@ -54,26 +56,21 @@ private:
 	gemGrid8x8 gemGrid;
 	std::vector<std::pair<int, int>> gemsToDestroy;
 
-	// first: from j | second: offset 
 	std::vector<std::pair<int, float>> columnOffsets;	
 	King::Engine* engine;
 	possibleMoves possibleMoves;
 
 	bool gridLocked;
 
-	float gravityIncrementer = 0.0f;
+	float gravityIncrementer;
 	const float gravity = 1.0f;
 
+	int fromX, fromY, toX, toY;
 
+	bool switchBack;
 
-
-	//stavi getter i setter
-	bool switchBack = false;
-
-	int fromX;
-	int fromY;
-	int toX;
-	int toY;
+	bool gemMoving = false;
+	bool checkPossibleMoves = true;
 	
 	bool isInCascadeInitial(int x, int y, King::Engine::Texture color);
 	void markToDestroy();
@@ -83,6 +80,5 @@ private:
 	bool findMatchesVertical(bool check);
 	bool alreadyMarkedForDestruction(int column, int row);
 	void switchAndCheckMatches(int x1, int y1, int x2, int y2);
-
 };
 

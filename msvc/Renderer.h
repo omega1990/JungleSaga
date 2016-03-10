@@ -14,6 +14,12 @@ public:
 	void RenderGemGrid();
 	void RenderToBeDestroyed(std::vector<std::pair<int, int>> gemsToBeDestroyed);
 	void RenderTop();
+	void RenderMenu();
+	void RenderMenuSlide(float x = 0.0f, float y = 0.0f);
+	void Renderer::RenderGameOverSlide(float x = 0.0f, float y = 0.0f);
+	void RenderGameOver(const char* score);
+
+
 
 	void RenderSelected(int selectedGemX, int selectedGemY);
 

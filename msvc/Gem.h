@@ -23,11 +23,6 @@ public:
 	King::Engine::Texture GetGemColor(); 
 	void SetGemColor(King::Engine::Texture color);
 
-	float mouseMoveStartX;
-	float mouseMoveStartY;
-	
-	bool Selected;
-
 	void SetOffsetX(float passedOffsetX);
 	void SetOffsetY(float passedOffsetY);
 	void SetOffset(float passedOffsetX, float passedOffsetY);
@@ -45,10 +40,12 @@ public:
 	void MoveDown();
 	void MoveUp();
 
+
+	void SetMouseMoveStart(float x, float y);
+	std::pair<float,float> getMouseMoveStart();
+
 	void ResetOffset();
 
-	void SetGravity(bool passedGravity) { gravity = passedGravity; };
-	bool GetGravity() { return gravity; };
 
 	const float gemMoveSpeed = 3.0f;
 
@@ -57,6 +54,9 @@ private:
 	float offsetX;
 	float offsetY;
 	bool toBeDestroyed;
+
+	float mouseMoveStartX;
+	float mouseMoveStartY;
 
 	bool gravity;
 };
