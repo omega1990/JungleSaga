@@ -7,7 +7,6 @@ namespace King {
 
 	class Updater {
 	public:
-		// True virtual function
 		virtual void Update() = 0;
 	protected:
 		~Updater() {}

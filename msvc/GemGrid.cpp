@@ -1,9 +1,5 @@
 #include "GemGrid.h"
-#include "Common.h"
-#include <random>
-#include <algorithm>
 
-// http://stackoverflow.com/questions/19665818/generate-random-numbers-using-c11-random-library
 
 GemGrid::GemGrid()
 	: gravityIncrementer(0.0f)

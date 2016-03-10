@@ -1,5 +1,5 @@
 #include "Game.h"
-
+#include "MusicMixer.h"
 
 Game::Game()
 	: mEngine("./assets")
@@ -27,29 +27,12 @@ Game::~Game()
 {
 	delete renderer;
 	delete grid;
-	Mix_FreeMusic(music);
-	Mix_FreeChunk(gemHit);
 }
 
 void Game::Start()
 {
-	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
-	music = Mix_LoadMUS("./assets/music.mp3");
-	if (!music)
-	{
-		std::cout << "Error while loading music " << Mix_GetError() << std::endl;
-	}
-	Mix_PlayMusic(music, -1);
-
-	gemHit = Mix_LoadWAV("./assets/gemPing.wav");
-	if (!gemHit)
-	{
-		std::cout << "Error while loading effect " << Mix_GetError() << std::endl;
-	}
-
+	mixer = new MusicMixer();
 	mEngine.Start(*this);
-	
-	
 }
 
 void Game::Update()
@@ -58,6 +41,7 @@ void Game::Update()
 	{
 		case MENU:
 		{
+
 			renderer->RenderMenu();
 			handleUserInteraction();
 			break;
@@ -70,6 +54,8 @@ void Game::Update()
 		}
 		case GAME:
 		{
+			mixer->PlayGameMusic();
+
 			// If gem was clicked to switch, perform the animation of switching
 			if (grid->IsGemMoving())
 			{
@@ -90,8 +76,7 @@ void Game::Update()
 				if (grid->possibleCheckPending())
 				{
 					possibleMoves moves = grid->FindPossibleMoves();
-					std::cout << "checking ... " << std::endl;
-
+					// Reshuffle if there is no possible moves
 					if (moves.size() == 0)
 					{
 						grid->Reshuffle();
@@ -106,7 +91,7 @@ void Game::Update()
 					{
 						grid->ActivateGravity();
 						score += grid->DestroyGems();
-						Mix_PlayChannel(1, gemHit, 0);
+						mixer->PlayGemHit();
 					}
 				}
 			}
@@ -129,6 +114,7 @@ void Game::Update()
 			if (static_cast<int>(referenceClock) == gameDuration)
 			{
 				mode = GAMEOVERSLIDE;
+				mixer->PlaySwoosh();
 				referenceClock = 0.0f;
 			}
 
@@ -164,8 +150,11 @@ void Game::handleUserInteraction()
 		{
 		case MENU:
 			mode = MENUSLIDE;
+			mixer->PlaySwoosh();
 			return;
 		case GAMEOVER:
+			mode = MENUSLIDE;
+			mixer->PlaySwoosh();
 			if(!mouseDownAlreadyHandled)
 				startNewGame();
 			return;
@@ -456,7 +445,8 @@ void Game::handleGameOverSlideUp()
 
 	if (slidePositionY < 0)
 	{
-		mode = GAMEOVER;
+		mode = GAMEOVER;	
+		mixer->PlayGameOverMusic();
 		// Reset sliding parameters after sliding is over
 		slidePositionY = 0.0f;
 	}
@@ -466,9 +456,7 @@ void Game::handleGameOverSlideUp()
 void Game::startNewGame()
 {
 	score = 0;
-	mode = MENUSLIDE;
 	
-	score = 0;
 	selectedGemX = DEFAULT_COORDINATE;
 	selectedGemY = DEFAULT_COORDINATE;
 	switchGemX = 0;

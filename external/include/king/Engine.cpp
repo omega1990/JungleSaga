@@ -68,10 +68,8 @@ namespace King {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		// Pridjeljivanje vrijednosti od assetsDirectory u assets string
 		std::string assets(assetsDirectory);
 
-		// ./assets/BackGround.jpg itd
 		std::string startScreen = assets; startScreen += "/StartScreen.png";
 		std::string background = assets; background += "/BackGround.jpg";
 		std::string blue = assets; blue += "/Blue.png";
@@ -86,8 +84,6 @@ namespace King {
 		std::string wood = assets; wood += "/Wood.png";
 		std::string font = assets; font += "/berlin_sans_demi_72_0.png";
 
-		// Surface container sadržava sve teksture (spriteove)
-		// Na kreiranje engine klase napravi reset svih tekstura, ako je ista valjda ne postavlja novi pokazivac?!
 		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_START].reset(new SdlSurface(startScreen.c_str()));
 		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_BACKGROUND].reset(new SdlSurface(background.c_str()));
 		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_BLUE].reset(new SdlSurface(blue.c_str()));
@@ -101,7 +97,6 @@ namespace King {
 		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_WOOD].reset(new SdlSurface(wood.c_str()));
 		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_EMPTY].reset(new SdlSurface(empty.c_str()));
 
-		// Specifikacija fonta - ne moras dirat
 		mPimpl->mFontSdlSurface.reset(new SdlSurface(font.c_str()));
 
 		glMatrixMode(GL_PROJECTION);

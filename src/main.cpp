@@ -1,9 +1,5 @@
 #define GLM_FORCE_RADIANS 
 
-#include <king/Engine.h>
-#include <king/Updater.h>
-
-#include "GemGrid.h"
 #include "Game.h"
 
 

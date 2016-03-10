@@ -2,8 +2,9 @@
 #include <iostream>
 #include <random>
 #include <tuple>
-
+#include <algorithm>
 #include <king\Engine.h>
+
 #include "Gem.h"
 #include "Common.h"
 
