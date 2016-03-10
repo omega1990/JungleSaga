@@ -27,11 +27,29 @@ Game::~Game()
 {
 	delete renderer;
 	delete grid;
+	Mix_FreeMusic(music);
+	Mix_FreeChunk(gemHit);
 }
 
 void Game::Start()
 {
+	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
+	music = Mix_LoadMUS("./assets/music.mp3");
+	if (!music)
+	{
+		std::cout << "Error while loading music " << Mix_GetError() << std::endl;
+	}
+	Mix_PlayMusic(music, -1);
+
+	gemHit = Mix_LoadWAV("./assets/gemPing.wav");
+	if (!gemHit)
+	{
+		std::cout << "Error while loading effect " << Mix_GetError() << std::endl;
+	}
+
 	mEngine.Start(*this);
+	
+	
 }
 
 void Game::Update()
@@ -88,6 +106,7 @@ void Game::Update()
 					{
 						grid->ActivateGravity();
 						score += grid->DestroyGems();
+						Mix_PlayChannel(1, gemHit, 0);
 					}
 				}
 			}

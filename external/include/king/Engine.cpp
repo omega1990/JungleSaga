@@ -40,7 +40,7 @@ namespace King {
 		bool mMouseButtonDown;
 		
 		EngineImplementation()
-			: mSdl(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_NOPARACHUTE)
+			: mSdl(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_NOPARACHUTE | SDL_INIT_AUDIO)
 			, mSdlWindow(WindowWidth, WindowHeight)
 			, mGlContext(mSdlWindow)
 			, mLastFrameSeconds(1.0f / 60.0f)

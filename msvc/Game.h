@@ -4,6 +4,7 @@
 #include "Renderer.h"
 #include "Gem.h"
 #include <string>
+#include <SDL/SDL_mixer.h>
 
 class Game : public King::Updater 
 {
@@ -26,6 +27,14 @@ public:
 	GameMode mode = MENU;
 
 private:
+
+	//The music that will be played
+	Mix_Music *music = NULL;
+
+	//The sound effects that will be used
+	Mix_Chunk *gemHit = NULL;
+
+
 	King::Engine mEngine;
 	GemGrid* grid;
 	gemGrid8x8& gemGrid;
