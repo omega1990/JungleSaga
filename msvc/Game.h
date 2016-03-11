@@ -75,7 +75,6 @@ private:
 	void Game::handleGameOverSlideUp();
 	void Game::startNewGame();
 
-
 	
-	const int gameDuration = 10;
+	const int gameDuration = 60;
 };

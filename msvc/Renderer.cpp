@@ -33,13 +33,13 @@ void Renderer::RenderTop() const
 /// <summary> Renders score </summary>
 void Renderer::RenderScore(const char* score) const
 {
-	mEngine->Write(score, 80.0f, 250.0f);
+	mEngine->Write(score, 80.0f, 260.0f);
 }
 
 /// <summary> Renders score </summary>
 void Renderer::RenderTime(const char* time) const
 {
-	mEngine->Write(time, 650.0f, 250.0f);
+	mEngine->Write(time, 645.0f, 260.0f);
 }
 
 /// <summary> Renders gem grid </summary>
@@ -127,7 +127,7 @@ void Renderer::RenderGameOverSlide(float x, float y) const
 void Renderer::RenderGameOver(const char* score) const
 {
 	RenderStartScreen();
-	mEngine->Write("Score:", 330.0f, 530.0f);
+	mEngine->Write("Score:", 325.0f, 530.0f);
 	mEngine->Write(score, 410.0f, 530.0f);
 	mEngine->Write("Click to retry", 295.0f, 560.0f);
 }

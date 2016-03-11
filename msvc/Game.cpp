@@ -41,6 +41,7 @@ void Game::Update()
 	{
 		case MENU:
 		{
+			mixer->PlayMenuMusic();
 			renderer->RenderMenu();
 			handleUserInteraction();
 			break;
@@ -431,7 +432,7 @@ void Game::handleMenuSlideDown()
 	{
 		mode = GAME;
 		// Prepare sliding parameters to game over sliding
-		slidePositionY = mEngine.GetHeight();
+		slidePositionY = static_cast<float>(mEngine.GetHeight());
 		slideIncrementer = 0.0f;
 	}
 }

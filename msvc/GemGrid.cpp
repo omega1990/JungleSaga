@@ -79,7 +79,7 @@ King::Engine::Texture GemGrid::GenerateRandomGemColor() const
 {
 	std::random_device rd;
 	std::mt19937 mt(rd());
-	std::uniform_int_distribution<int> dist(1.0, std::nextafter(5, INT_MAX));
+	std::uniform_int_distribution<int> dist(1, static_cast<int>(std::nextafter(5, INT_MAX)));
 
 	return static_cast<King::Engine::Texture>(dist(mt));
 }
@@ -316,6 +316,7 @@ bool GemGrid::findMatches(bool check)
 		findMatchesHorizontal(false);
 		findMatchesVertical(false);
 	}
+	return false;
 }
 
 /// <summary> Finds current matches horizontally</summary>

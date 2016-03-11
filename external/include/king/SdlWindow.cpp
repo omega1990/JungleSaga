@@ -6,7 +6,7 @@
 
 namespace King {
 	SdlWindow::SdlWindow(unsigned int width, unsigned int height)
-		: mSDLWindow(SDL_CreateWindow("KingTest"
+		: mSDLWindow(SDL_CreateWindow("JungleSaga"
 		, SDL_WINDOWPOS_UNDEFINED
 		, SDL_WINDOWPOS_UNDEFINED
 		, width

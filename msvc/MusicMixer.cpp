@@ -9,7 +9,7 @@ MusicMixer::MusicMixer()
 {
 	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
 
-	menuMusic = Mix_LoadMUS("./assets/music.mp3");
+	menuMusic = Mix_LoadMUS("./assets/menu.wav");
 	if (!menuMusic)
 		std::cout << "Error while loading music " << Mix_GetError() << std::endl;
 
@@ -40,6 +40,7 @@ MusicMixer::~MusicMixer()
 	Mix_FreeMusic(menuMusic);
 }
 
+/// <summary> Plays menu music </summary>
 void MusicMixer::PlayMenuMusic() const
 {
 	if (!Mix_PlayingMusic())
@@ -49,7 +50,7 @@ void MusicMixer::PlayMenuMusic() const
 	}
 }
 
-
+/// <summary> Plays game music </summary>
 void MusicMixer::PlayGameMusic() const
 {
 	if (!Mix_PlayingMusic())
@@ -59,6 +60,7 @@ void MusicMixer::PlayGameMusic() const
 	}
 }
 
+/// <summary> Plays game over music </summary>
 void MusicMixer::PlayGameOverMusic() const
 {
 	if (!Mix_PlayingMusic())
@@ -68,17 +70,20 @@ void MusicMixer::PlayGameOverMusic() const
 	}
 }
 
+/// <summary> Plays gem hit sound </summary>
 void MusicMixer::PlayGemHit() const
 {
 	Mix_PlayChannel(1, gemHit, 0);
 }
 
+/// <summary> Plays swoosh sound </summary>
 void MusicMixer::PlaySwoosh() const
 {
 	StopMusic();
 	Mix_PlayChannel(2, swoosh, 0);
 }
 
+/// <summary> Stops music </summary>
 void MusicMixer::StopMusic() const
 {
 	Mix_HaltMusic();
