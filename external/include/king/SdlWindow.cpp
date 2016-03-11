@@ -3,6 +3,8 @@
 #include <stdexcept>
 #include <string>
 #include <sdl/SDL.h>
+#include <sdl/SDL_image.h>
+#include <iostream>
 
 namespace King {
 	SdlWindow::SdlWindow(unsigned int width, unsigned int height)
@@ -15,6 +17,12 @@ namespace King {
 		if (mSDLWindow == false) {
 			throw std::runtime_error(std::string("Error creating window: ") + SDL_GetError());
 		}
+
+
+		SDL_Surface *image; 
+		image = IMG_Load("./assets/Green.png");
+		if (!image) std::cout << "Error" << std::endl;
+		SDL_SetWindowIcon(mSDLWindow.get(), image);
 	}
 	void SdlWindow::Show() {
 		SDL_ShowWindow(mSDLWindow.get());

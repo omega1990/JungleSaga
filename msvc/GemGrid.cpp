@@ -79,7 +79,8 @@ King::Engine::Texture GemGrid::GenerateRandomGemColor() const
 {
 	std::random_device rd;
 	std::mt19937 mt(rd());
-	std::uniform_int_distribution<int> dist(1, static_cast<int>(std::nextafter(5, INT_MAX)));
+	std::uniform_int_distribution<int> dist(static_cast<int>(King::Engine::TEXTURE_BLUE), 
+		static_cast<int>(std::nextafter(static_cast<int>(King::Engine::TEXTURE_YELLOW), INT_MAX)));
 
 	return static_cast<King::Engine::Texture>(dist(mt));
 }

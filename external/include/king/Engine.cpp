@@ -78,7 +78,6 @@ namespace King {
 		std::string red = assets; red += "/Red.png";
 		std::string yellow = assets; yellow += "/Yellow.png";
 		std::string toBeDestroyed = assets; toBeDestroyed += "/ToBeDestroyed.png";
-		std::string empty = assets; empty += "/Empty.png";
 		std::string selected = assets; selected += "/Selected.png";
 		std::string top = assets; top += "/Top.png";
 		std::string font = assets; font += "/berlin_sans_demi_72_0.png";
@@ -93,7 +92,6 @@ namespace King {
 		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_SELECTED].reset(new SdlSurface(selected.c_str()));
 		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_TBD].reset(new SdlSurface(toBeDestroyed.c_str()));
 		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_TOP].reset(new SdlSurface(top.c_str()));
-		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_EMPTY].reset(new SdlSurface(empty.c_str()));
 
 		mPimpl->mFontSdlSurface.reset(new SdlSurface(font.c_str()));
 

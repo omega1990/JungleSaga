@@ -1,3 +1,4 @@
+#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #define GLM_FORCE_RADIANS 
 
 #include "Game.h"
